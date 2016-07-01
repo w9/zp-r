@@ -1,4 +1,4 @@
-#' qplot3
+#' 3D scatter plot on Rstudio viewer
 #'
 #' @export
 #' @examples

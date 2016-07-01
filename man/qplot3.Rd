@@ -2,11 +2,14 @@
 % Please edit documentation in R/g3plot.R
 \name{qplot3}
 \alias{qplot3}
-\title{qplot3}
+\title{3D scatter plot on Rstudio viewer}
 \usage{
-qplot3(data, mappings, verbose_level = 0)
+qplot3(mappings, data, verbose_level = 0)
 }
 \description{
-qplot3
+3D scatter plot on Rstudio viewer
+}
+\examples{
+qplot3(aes(x=x, y=y, z=z, color=pick), ret)
 }
 
