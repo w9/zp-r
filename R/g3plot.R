@@ -1,6 +1,7 @@
-qplot3 <- function(data, mappings) {
+#' qplot3
+qplot3 <- function(data, mappings, verbose_level=0) {
   temp_dir <- tempdir()
-  message(temp_dir)
+  if (verbose_level > 1) message(sprintf('Creating directory %s', temp_dir))
 
   if (!file.exists(file.path(temp_dir, '3js'))) {
     plotter_dir <- system.file('3js', package='zzz')
