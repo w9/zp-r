@@ -73,7 +73,7 @@ function plot() {
       AES_DF.x = normalize11(RAW_DF[MAPPINGS.x], 100);
       AES_DF.y = normalize11(RAW_DF[MAPPINGS.y], 100);
       AES_DF.z = normalize11(RAW_DF[MAPPINGS.z], 100, 100);
-      AES_DF.colour = convertBoolsToColors(RAW_DF[MAPPINGS.colour]);
+      AES_DF.color = convertBoolsToColors(RAW_DF[MAPPINGS.colour]);
 
   //----------------- Handle keyboard events --------------------//
 
