@@ -8,7 +8,7 @@ qplot3 <- function(data, mappings, verbose_level=0) {
   if (!file.exists(file.path(temp_dir, '3js'))) {
     plotter_dir <- system.file('3js', package='ggplot3')
     file.copy(plotter_dir, temp_dir, recursive=T)
-    message(sprintf('from %s to %s', plotter_dir, temp_dir))
+    if (verbose_level > 1) message(sprintf('Copy %s to %s', plotter_dir, temp_dir))
   }
 
   json_string <- jsonlite::toJSON(list(data=data, mappings=mappings), dataframe='columns', auto_unbox=T)
