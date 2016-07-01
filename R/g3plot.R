@@ -6,7 +6,7 @@ qplot3 <- function(data, mappings, verbose_level=0) {
   if (verbose_level > 1) message(sprintf('Creating directory %s', temp_dir))
 
   if (!file.exists(file.path(temp_dir, '3js'))) {
-    plotter_dir <- system.file('3js', package='zzz')
+    plotter_dir <- system.file('3js', package='ggplot3')
     file.copy(plotter_dir, temp_dir, recursive=T)
     message(sprintf('from %s to %s', plotter_dir, temp_dir))
   }
