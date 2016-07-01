@@ -1,4 +1,6 @@
 #' qplot3
+#'
+#' @export
 qplot3 <- function(data, mappings, verbose_level=0) {
   temp_dir <- tempdir()
   if (verbose_level > 1) message(sprintf('Creating directory %s', temp_dir))
