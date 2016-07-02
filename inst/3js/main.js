@@ -1,4 +1,4 @@
-var COLOR_PALETTE = ['#db2d20','#01a0e4','#01a252','#a16a94','#222222','#b5e4f4'];
+var COLOR_PALETTE = ['#01a0e4','#db2d20','#01a252','#a16a94','#222222','#b5e4f4'];
 var SCREEN_WIDTH = window.innerWidth;
 var SCREEN_HEIGHT = window.innerHeight;
 var VIEW_ANGLE = 45;
@@ -65,15 +65,43 @@ function plot() {
     return a.map(function(k){return ((k-i)/(x-i)*2-1)*scale + offset});
   }
 
-  function convertBoolsToColors(a) {
-    return a.map(function(x){return COLOR_PALETTE[x ? 0 : 1]});
+  function convertFactorsToColors(a) {
+    var colors = [];
+    var mappings = {};
+    var levelCount = 0;
+
+    for (i in a) {
+      var f = a[i].toString();
+      if (f in mappings) {
+        colors.push(mappings[f]);
+      } else {
+        levelCount ++;
+        mappings[f] = COLOR_PALETTE[levelCount - 1];
+        colors.push(mappings[f]);
+      }
+    }
+    return { mappings: mappings, colors: colors };
   }
 
   var AES_DF = {};
-      AES_DF.x = normalize11(RAW_DF[MAPPINGS.x], 100);
-      AES_DF.y = normalize11(RAW_DF[MAPPINGS.y], 100);
-      AES_DF.z = normalize11(RAW_DF[MAPPINGS.z], 100, 100);
-      AES_DF.color = convertBoolsToColors(RAW_DF[MAPPINGS.colour]);
+  AES_DF.x = normalize11(RAW_DF[MAPPINGS.x], 100);
+  AES_DF.y = normalize11(RAW_DF[MAPPINGS.y], 100);
+  AES_DF.z = normalize11(RAW_DF[MAPPINGS.z], 100, 100);
+  if ('colour' in MAPPINGS) {
+    var scale = convertFactorsToColors(RAW_DF[MAPPINGS.colour]);
+    AES_DF.color = scale.colors;
+    drawLegend(scale.mappings, MAPPINGS.colour, 'color_discrete');
+  }
+
+  function drawLegend(mappings, name, type) {
+    var legendDiv = document.getElementById('legend');
+    var colorLegend = document.createElement('div');
+    colorLegend.innerHTML = '<h2>' + name + '</h2>';
+    for (i in mappings) {
+      colorLegend.innerHTML += '<div>' + '<span class="color-patch" style="background-color: ' + mappings[i] +'"></span>' + i + '</div>';
+    }
+    legendDiv.appendChild(colorLegend);
+  }
 
   //----------------- Handle keyboard events --------------------//
 
@@ -125,6 +153,7 @@ function plot() {
 
     controls = new THREE.OrbitControls( camera, renderer.domElement );
     controls.target = new THREE.Vector3(0,100,0);
+    controls.autoRotate = true;
     controls.update();
 
     stats = new Stats();
@@ -188,6 +217,7 @@ function plot() {
       //...
     }
     
+    controls.update();
     stats.update();
   }
 

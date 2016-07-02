@@ -20,3 +20,25 @@ body {
   height: 300px;
   width: 280px;
 }
+
+#legend {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  height: 200px;
+  width: 200px;
+  background-color: rgba(255,255,255,0.2);
+  padding: 5px;
+}
+
+#legend h2 {
+  margin: 5px;
+  font-size: 1.5em;
+}
+
+.color-patch {
+  height: 20px;
+  width: 20px;
+  display: inline-flex;
+  margin: 5px;
+}
