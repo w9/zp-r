@@ -9,7 +9,7 @@ var SPRITE_SIZE = 128;
 var RAW_DF;
 var MAPPINGS;
 
-var container, scene, camera, renderer, controls, stats;
+var container, scene, camera, renderer, controls, stats, mousestate, points;
 
 function getJSON(url, callback) {
   var xhr = new XMLHttpRequest();
@@ -37,6 +37,9 @@ getJSON('query.json', function(err, p) {
 
 
 function plot() {
+  points = [];
+  selecteObj = null;
+
   var overlay = document.getElementById('overlay');
 
   var keyboard = new THREEx.KeyboardState();
@@ -198,9 +201,13 @@ function plot() {
       discSprt.position.set( x, z, y );
       discSprt.scale.set( 5, 5, 1 );
       scene.add( discSprt );
+
+      points.push(discSprt);
     }
 
     scene.fog = new THREE.FogExp2( 0x9999ff, 0.00025 );
+    mousestate = new LIB.MouseState(document, camera, points);
+
   }
 
   function animate() 
@@ -216,8 +223,9 @@ function plot() {
     { 
       //...
     }
-    
+
     controls.update();
+    mousestate.update();
     stats.update();
   }
 
