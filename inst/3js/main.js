@@ -1,3 +1,12 @@
+// TODO: use **one** canvas matrial (white). use the material "color" property as color
+// TODO: labeling when hovered. (an option) show all fields in the left top corner, as plain text
+// TODO: make auto rotation an option
+// TODO: adopt/modify the offical library for canvas material: http://threejs.org/examples/#canvas_interactive_particles
+// TODO: acceleration and damping in mouse rotation.
+// TODO: change the base to something like http://threejs.org/examples/#webgl_geometry_spline_editor, exept it's infinitely large and there's fog
+// TODO: add drop shadow to the base, looks great
+// TODO: Temporal Anti-Aliasing (TAA), maybe for lines in the future
+//
 var COLOR_PALETTE = ['#01a0e4','#db2d20','#01a252','#a16a94','#222222','#b5e4f4'];
 var SCREEN_WIDTH = window.innerWidth;
 var SCREEN_HEIGHT = window.innerHeight;

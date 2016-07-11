@@ -4,6 +4,7 @@
 #' @examples
 #' qplot3(aes(x=x, y=y, z=z, color=pick), ret)
 qplot3 <- function(mappings, data, verbose_level=0) {
+  # TODO: mappings sanity check
   temp_dir <- tempdir()
   if (verbose_level > 1) message(sprintf('Creating directory %s', temp_dir))
 
