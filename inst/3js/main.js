@@ -221,7 +221,7 @@ function plot() {
   }
 
   function onSelect(obj) {
-    if (OPTIONS.showDatum) {
+    if (OPTIONS['show_datum']) {
       var outputs = [];
       for (var prop in obj.datum) {
         outputs.push(prop + ' = ' + obj.datum[prop]);
