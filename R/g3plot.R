@@ -11,7 +11,7 @@ qplot3 <- function(mappings, data, verbose_level=0, show_datum=F) {
   if (verbose_level > 1) message(sprintf('Creating directory %s', temp_dir))
 
   if (!file.exists(file.path(temp_dir, folder_name))) {
-    plotter_dir <- system.file(folder_name, package='ggplot3')
+    plotter_dir <- system.file('3js', package='ggplot3')
     file.copy(plotter_dir, temp_dir, recursive=T)
     if (verbose_level > 1) message(sprintf('Copy %s to %s', plotter_dir, temp_dir))
   }
