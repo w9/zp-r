@@ -2,6 +2,7 @@
 #'
 #' @export
 #' @examples
+#' library(ggplot2)
 #' data(ret)
 #' qplot3(aes(x=x, y=y, z=z, color=group), data=ret, show_datum=T)
 qplot3 <- function(mappings, data, verbose_level=0, show_datum=F) {
