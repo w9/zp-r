@@ -4,13 +4,36 @@ body {
   overflow: hidden;
 }
 
-#datum-display {
+#overlay {
   font-family: monospace;
   font-size: 1em;
   position: absolute;
   left: 10px;
   top: 10px;
   overflow: visible;
+}
+
+#toolbar {
+  -webkit-user-select: none;
+}
+
+#toolbar i {
+  -webkit-user-select: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: auto;
+  height: auto;
+  padding: 0;
+  color: rgba(0, 0, 0, 0.3);
+}
+
+#toolbar i:hover {
+  color: rgba(0, 0, 0, 0.9) !important;
+}
+
+#toolbar i.activated {
+  color: rgba(0, 0, 0, 0.7);
 }
 
 #legend {

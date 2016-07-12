@@ -1,3 +1,5 @@
+// TODO: change the "show_datum" to an interface button
+// TODO: change the "show_datum" to use clicking instead of hovering to select point. add asterisk marking the selected point
 // TODO: for **discrete** groupings, should reuse material
 // TODO: change the base to something like http://threejs.org/examples/#webgl_geometry_spline_editor, exept it's infinitely large and there's fog
 // TODO: add drop shadow to the base, looks great
@@ -12,12 +14,20 @@ var ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT;
 var NEAR = 0.1;
 var FAR = 20000;
 var SPRITE_SIZE = 128;
-var RAW_DF, MAPPINGS, OPTIONS;
+var RAW_DF, MAPPINGS;
+
+var OPTIONS = {
+  datumInfo: false,
+  enablePan: false
+};
 
 var container, scene, camera, renderer, orbit, stats, mousestate, points;
 
 var datumDisplay = document.getElementById('datum-display');
 var legendDiv = document.getElementById('legend');
+var datumButton = document.getElementById('datum-button');
+var resetCameraButton = document.getElementById('reset-camera-button');
+var togglePanButton = document.getElementById('toggle-pan-button');
 
 function getJSON(url, callback) {
   var xhr = new XMLHttpRequest();
@@ -39,7 +49,6 @@ getJSON('query.json', function(err, p) {
   } else {
     RAW_DF = p.data;
     MAPPINGS = p.mappings;
-    OPTIONS = p.options;
     plot();
   }
 });
@@ -111,7 +120,31 @@ function plot() {
     legendDiv.appendChild(colorLegend);
   }
 
-  //----------------- Handle keyboard events --------------------//
+  //------------------------ Handle events ----------------------//
+  
+  datumButton.addEventListener('click', function(e) {
+    OPTIONS.datumInfo = !OPTIONS.datumInfo;
+    datumDisplay.hidden = !OPTIONS.datumInfo;
+    if (OPTIONS.datumInfo) {
+      datumButton.classList.add('activated');
+    } else {
+      datumButton.classList.remove('activated');
+    }
+  });
+
+  resetCameraButton.addEventListener('click', function(e) {
+    orbit.reset();
+  });
+
+  togglePanButton.addEventListener('click', function(e) {
+    OPTIONS.enablePan = !OPTIONS.enablePan;
+    orbit.enablePan = OPTIONS.enablePan;
+    if (OPTIONS.enablePan) {
+      togglePanButton.classList.add('activated');
+    } else {
+      togglePanButton.classList.remove('activated');
+    }
+  });
 
   document.body.addEventListener('keypress', function(e) {
     switch (e.key) {
@@ -157,9 +190,11 @@ function plot() {
     THREEx.WindowResize(renderer, camera);
 
     orbit = new THREE.OrbitControls( camera, renderer.domElement );
-    orbit.target = new THREE.Vector3(0,100,0);
+    orbit.target0 = new THREE.Vector3(0,100,0);
     orbit.enableDamping = true;
+    orbit.enablePan = false;
     orbit.dampingFactor = 0.4;
+    orbit.reset();
     orbit.update();
 
     stats = new Stats();
@@ -168,16 +203,6 @@ function plot() {
     stats.domElement.style.zIndex = 100;
     stats.domElement.hidden = true;
     container.appendChild( stats.domElement );
-
-    // FLOOR
-    //var floorTexture = new THREE.Texture( square );
-    //    floorTexture.needsUpdate = true;
-    //var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, alphaMap: floorTexture, side: THREE.DoubleSide, transparent: true } );
-    //var floorGeometry = new THREE.PlaneGeometry(100, 100, 1, 1);
-    //var floor = new THREE.Mesh(floorGeometry, floorMaterial);
-    //floor.position.y = -0.5;
-    //floor.rotation.x = Math.PI / 2;
-    //scene.add(floor);
 
     var floorMtrl = new THREE.LineBasicMaterial( { color: 0x000000 });
     var floorGtry = new THREE.Geometry();
@@ -214,22 +239,8 @@ function plot() {
       points.push(discSprt);
     }
 
-    mousestate = new LIB.MouseState(document, camera, points, onSelect, onDeselect);
+    mousestate = new LIB.MouseState(document, camera, points);
 
-  }
-
-  function onSelect(obj) {
-    if (OPTIONS['show_datum']) {
-      var outputs = [];
-      for (var prop in obj.datum) {
-        outputs.push(prop + ' = ' + obj.datum[prop]);
-      }
-      datumDisplay.innerText = outputs.join('\n');
-    }
-  }
-
-  function onDeselect(obj) {
-    //datumDisplay.innerText = '';
   }
 
   function animate() 
@@ -247,7 +258,23 @@ function plot() {
     }
 
     orbit.update();
-    mousestate.update();
+    if (OPTIONS.datumInfo) {
+      mousestate.detectHovering(
+        function(obj) {
+          if (OPTIONS.datumInfo) {
+            var outputs = [];
+            for (var prop in obj.datum) {
+              outputs.push(prop + ' = ' + obj.datum[prop]);
+            }
+            datumDisplay.innerText = outputs.join('\n');
+          }
+        },
+
+        function(obj) {
+          //datumDisplay.innerText = '';
+        }
+      );
+    }
     stats.update();
   }
 

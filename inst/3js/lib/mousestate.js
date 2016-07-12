@@ -4,15 +4,13 @@
 //
 var LIB = LIB || {};
 
-LIB.MouseState = function (domElement, camera, objs, onSelect, onDeselect) {
+LIB.MouseState = function (domElement, camera, objs) {
   this.domElement= domElement || document;
   this.camera = camera;
   this.objs = objs;
   this.mouse = new THREE.Vector2(Infinity, Infinity, Infinity);
   this.raycaster = new THREE.Raycaster();
   this.intersectObj = null;
-  this.onSelect = onSelect;
-  this.onDeselect = onDeselect;
   
   // create callback to bind/unbind keyboard events
   var _this = this;
@@ -31,20 +29,20 @@ LIB.MouseState.prototype._onMouseChange = function(event) {
   this.mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 };
 
-LIB.MouseState.prototype.update = function() {
+LIB.MouseState.prototype.detectHovering = function(onSelect, onDeselect) {
     this.raycaster.setFromCamera( this.mouse, this.camera );
     var intersects = this.raycaster.intersectObjects( this.objs );
     if (intersects.length > 0) {
       if (this.selectedObj != intersects[0].object) {
         if (this.selectedObj) {
-          this.onDeselect(this.selectedObj);
+          onDeselect(this.selectedObj);
         }
         this.selectedObj = intersects[0].object
-        this.onSelect(this.selectedObj);
+        onSelect(this.selectedObj);
       }
     } else {
       if (this.selectedObj) {
-        this.onDeselect(this.selectedObj);
+        onDeselect(this.selectedObj);
         this.selectedObj = null;
       }
     }

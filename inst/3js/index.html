@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <script src="https://code.jquery.com/jquery-3.1.0.js" integrity="sha256-slogkvB1K3VOkzAI8QITxV3VzpOnkeNVsKvtkYLMjfk=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r78/three.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mousetrap/1.4.6/mousetrap.js"></script>
     <script src="lib/detector.js"></script>
@@ -9,12 +10,20 @@
     <script src="lib/windowresize.js"></script>
     <script src="lib/stats.js"></script>
     <script src="lib/mousestate.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="main.css">
   </head>
   <body>
     <div id="plot-container"></div>
     <div id="legend"></div>
-    <div id="datum-display"></div>
+    <div id="overlay">
+      <div id="toolbar">
+        <i id="datum-button" title="show datum info upon hovering" class="material-icons">info</i>
+        <i id="reset-camera-button" title="reset camera angle" class="material-icons">settings_backup_restore</i>
+        <i id="toggle-pan-button" title="toggle camera pan (mouse right button drag)" class="material-icons">open_with</i>
+      </div>
+      <div id="datum-display"></div>
+    </div>
     <script src="main.js"></script>
   </body>
 </html>
