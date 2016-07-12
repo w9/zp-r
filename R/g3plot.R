@@ -6,13 +6,13 @@
 qplot3 <- function(mappings, data, verbose_level=0, show_datum=F) {
   # TODO: mappings sanity check
 
-  folder_name <- '3js01'
+  folder_name <- '3js'
   temp_dir <- tempdir()
   if (verbose_level > 1) message(sprintf('Creating directory %s', temp_dir))
 
   if (!file.exists(file.path(temp_dir, folder_name))) {
-    plotter_dir <- system.file('3js', package='ggplot3')
-    file.copy(plotter_dir, file.path(temp_dir, folder_name), recursive=T)
+    plotter_dir <- system.file(folder_name, package='ggplot3')
+    file.symlink(plotter_dir, file.path(temp_dir, folder_name))
     if (verbose_level > 1) message(sprintf('Copy %s to %s', plotter_dir, temp_dir))
   }
 
