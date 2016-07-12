@@ -1,11 +1,9 @@
-// TODO: use **one** canvas matrial (white). use the material "color" property as color
-// TODO: labeling when hovered. (an option) show all fields in the left top corner, as plain text
 // TODO: make auto rotation an option
-// TODO: adopt/modify the offical library for canvas material: http://threejs.org/examples/#canvas_interactive_particles
 // TODO: acceleration and damping in mouse rotation.
 // TODO: change the base to something like http://threejs.org/examples/#webgl_geometry_spline_editor, exept it's infinitely large and there's fog
 // TODO: add drop shadow to the base, looks great
 // TODO: Temporal Anti-Aliasing (TAA), maybe for lines in the future
+// TODO: adopt/modify the offical library for canvas material: http://threejs.org/examples/#canvas_interactive_particles
 //
 var COLOR_PALETTE = ['#01a0e4','#db2d20','#01a252','#a16a94','#222222','#b5e4f4'];
 var SCREEN_WIDTH = window.innerWidth;
@@ -15,10 +13,12 @@ var ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT;
 var NEAR = 0.1;
 var FAR = 20000;
 var SPRITE_SIZE = 128;
-var RAW_DF;
-var MAPPINGS;
+var RAW_DF, MAPPINGS, OPTIONS;
 
-var container, scene, camera, renderer, controls, stats, mousestate, points;
+var container, scene, camera, renderer, orbit, stats, mousestate, points;
+
+var datumDisplay = document.getElementById('datum-display');
+var legendDiv = document.getElementById('legend');
 
 function getJSON(url, callback) {
   var xhr = new XMLHttpRequest();
@@ -40,16 +40,14 @@ getJSON('query.json', function(err, p) {
   } else {
     RAW_DF = p.data;
     MAPPINGS = p.mappings;
+    OPTIONS = p.options;
     plot();
   }
 });
 
-
 function plot() {
   points = [];
   selecteObj = null;
-
-  var overlay = document.getElementById('overlay');
 
   var keyboard = new THREEx.KeyboardState();
 
@@ -106,7 +104,6 @@ function plot() {
   }
 
   function drawLegend(mappings, name, type) {
-    var legendDiv = document.getElementById('legend');
     var colorLegend = document.createElement('div');
     colorLegend.innerHTML = '<h2>' + name + '</h2>';
     for (i in mappings) {
@@ -119,9 +116,6 @@ function plot() {
 
   document.body.addEventListener('keypress', function(e) {
     switch (e.key) {
-      case 'o':
-        overlay.hidden = !overlay.hidden;
-        break;
       case 'p':
         stats.domElement.hidden = !stats.domElement.hidden;
         break;
@@ -163,10 +157,11 @@ function plot() {
 
     THREEx.WindowResize(renderer, camera);
 
-    controls = new THREE.OrbitControls( camera, renderer.domElement );
-    controls.target = new THREE.Vector3(0,100,0);
-    controls.autoRotate = true;
-    controls.update();
+    orbit = new THREE.OrbitControls( camera, renderer.domElement );
+    orbit.target = new THREE.Vector3(0,100,0);
+    orbit.enableDamping = true;
+    orbit.dampingFactor = 0.4;
+    orbit.update();
 
     stats = new Stats();
     stats.domElement.style.position = 'absolute';
@@ -203,20 +198,40 @@ function plot() {
       var z = AES_DF.z[i];
       var color = AES_DF.color[i];
 
+      var datum = {};
+      for (var prop in RAW_DF) {
+        datum[prop] = RAW_DF[prop][i];
+      }
+
       var discTxtr = new THREE.Texture(mkDisc(color));
           discTxtr.needsUpdate = true;
       var discMtrl = new THREE.SpriteMaterial( { map: discTxtr } );
       var discSprt = new THREE.Sprite( discMtrl );
       discSprt.position.set( x, z, y );
       discSprt.scale.set( 5, 5, 1 );
+      discSprt.datum = datum;
       scene.add( discSprt );
 
       points.push(discSprt);
     }
 
     scene.fog = new THREE.FogExp2( 0x9999ff, 0.00025 );
-    mousestate = new LIB.MouseState(document, camera, points);
+    mousestate = new LIB.MouseState(document, camera, points, onSelect, onDeselect);
 
+  }
+
+  function onSelect(obj) {
+    if (OPTIONS.showDatum) {
+      var outputs = [];
+      for (var prop in obj.datum) {
+        outputs.push(prop + ' = ' + obj.datum[prop]);
+      }
+      datumDisplay.innerText = outputs.join('\n');
+    }
+  }
+
+  function onDeselect(obj) {
+    //datumDisplay.innerText = '';
   }
 
   function animate() 
@@ -233,7 +248,7 @@ function plot() {
       //...
     }
 
-    controls.update();
+    orbit.update();
     mousestate.update();
     stats.update();
   }

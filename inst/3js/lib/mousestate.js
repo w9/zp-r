@@ -4,13 +4,15 @@
 //
 var LIB = LIB || {};
 
-LIB.MouseState = function (domElement, camera, objs) {
+LIB.MouseState = function (domElement, camera, objs, onSelect, onDeselect) {
   this.domElement= domElement || document;
   this.camera = camera;
   this.objs = objs;
   this.mouse = new THREE.Vector2(Infinity, Infinity, Infinity);
   this.raycaster = new THREE.Raycaster();
   this.intersectObj = null;
+  this.onSelect = onSelect;
+  this.onDeselect = onDeselect;
   
   // create callback to bind/unbind keyboard events
   var _this = this;
@@ -35,14 +37,14 @@ LIB.MouseState.prototype.update = function() {
     if (intersects.length > 0) {
       if (this.selectedObj != intersects[0].object) {
         if (this.selectedObj) {
-          this.selectedObj.material.color.set(0xffffff);
+          this.onDeselect(this.selectedObj);
         }
         this.selectedObj = intersects[0].object
-        this.selectedObj.material.color.set(0x000000);
+        this.onSelect(this.selectedObj);
       }
     } else {
       if (this.selectedObj) {
-        this.selectedObj.material.color.set(0xffffff);
+        this.onDeselect(this.selectedObj);
         this.selectedObj = null;
       }
     }
