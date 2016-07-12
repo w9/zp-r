@@ -1,5 +1,4 @@
-// TODO: make auto rotation an option
-// TODO: acceleration and damping in mouse rotation.
+// TODO: for **discrete** groupings, should reuse material
 // TODO: change the base to something like http://threejs.org/examples/#webgl_geometry_spline_editor, exept it's infinitely large and there's fog
 // TODO: add drop shadow to the base, looks great
 // TODO: Temporal Anti-Aliasing (TAA), maybe for lines in the future
@@ -215,7 +214,6 @@ function plot() {
       points.push(discSprt);
     }
 
-    scene.fog = new THREE.FogExp2( 0x9999ff, 0.00025 );
     mousestate = new LIB.MouseState(document, camera, points, onSelect, onDeselect);
 
   }
