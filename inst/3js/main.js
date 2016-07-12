@@ -1,3 +1,4 @@
+// TODO: should be able to toggle between 1:1:1 aspect ratio and the actual aspect ratio
 // TODO: use pretty scales (1, 2, 5, 10 ticks) used in ggplot2
 // TODO: when hovering over the legend block, show lower all other groups' transparency
 // TODO: change the "show_datum" to use clicking instead of hovering to select point. add asterisk marking the selected point
