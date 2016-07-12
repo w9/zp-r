@@ -1,6 +1,7 @@
-// TODO: change the "show_datum" to an interface button
+// TODO: use pretty scales (1, 2, 5, 10 ticks) used in ggplot2
+// TODO: when hovering over the legend block, show lower all other groups' transparency
 // TODO: change the "show_datum" to use clicking instead of hovering to select point. add asterisk marking the selected point
-// TODO: for **discrete** groupings, should reuse material
+// TODO: for **discrete** groupings, should reuse material; furthermore, the "color patches" should be the canvas themselves when the grouping is discrete
 // TODO: change the base to something like http://threejs.org/examples/#webgl_geometry_spline_editor, exept it's infinitely large and there's fog
 // TODO: add drop shadow to the base, looks great
 // TODO: Temporal Anti-Aliasing (TAA), maybe for lines in the future
@@ -17,8 +18,7 @@ var SPRITE_SIZE = 128;
 var RAW_DF, MAPPINGS;
 
 var OPTIONS = {
-  datumInfo: false,
-  enablePan: false
+  datumInfo: false
 };
 
 var container, scene, camera, renderer, orbit, stats, mousestate, points;
@@ -27,7 +27,6 @@ var datumDisplay = document.getElementById('datum-display');
 var legendDiv = document.getElementById('legend');
 var datumButton = document.getElementById('datum-button');
 var resetCameraButton = document.getElementById('reset-camera-button');
-var togglePanButton = document.getElementById('toggle-pan-button');
 
 function getJSON(url, callback) {
   var xhr = new XMLHttpRequest();
@@ -136,16 +135,6 @@ function plot() {
     orbit.reset();
   });
 
-  togglePanButton.addEventListener('click', function(e) {
-    OPTIONS.enablePan = !OPTIONS.enablePan;
-    orbit.enablePan = OPTIONS.enablePan;
-    if (OPTIONS.enablePan) {
-      togglePanButton.classList.add('activated');
-    } else {
-      togglePanButton.classList.remove('activated');
-    }
-  });
-
   document.body.addEventListener('keypress', function(e) {
     switch (e.key) {
       case 'p':
@@ -192,7 +181,6 @@ function plot() {
     orbit = new THREE.OrbitControls( camera, renderer.domElement );
     orbit.target0 = new THREE.Vector3(0,100,0);
     orbit.enableDamping = true;
-    orbit.enablePan = false;
     orbit.dampingFactor = 0.4;
     orbit.reset();
     orbit.update();
