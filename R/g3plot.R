@@ -2,7 +2,8 @@
 #'
 #' @export
 #' @examples
-#' qplot3(aes(x=x, y=y, z=z, color=pick), data=ret, show_datum=T)
+#' data(ret)
+#' qplot3(aes(x=x, y=y, z=z, color=group), data=ret, show_datum=T)
 qplot3 <- function(mappings, data, verbose_level=0, show_datum=F) {
   # TODO: mappings sanity check
 
