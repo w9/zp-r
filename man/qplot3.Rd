@@ -4,7 +4,7 @@
 \alias{qplot3}
 \title{3D scatter plot on Rstudio viewer}
 \usage{
-qplot3(mappings, data, verbose_level = 0)
+qplot3(mapping, data, verbose_level = 0)
 }
 \description{
 3D scatter plot on Rstudio viewer
