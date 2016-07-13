@@ -7,7 +7,8 @@
 // TODO: add drop shadow to the base, looks great
 // TODO: Temporal Anti-Aliasing (TAA), maybe for lines in the future
 // TODO: adopt/modify the offical library for canvas material: http://threejs.org/examples/#canvas_interactive_particles
-//
+
+
 var COLOR_PALETTE = ['#01a0e4','#db2d20','#01a252','#a16a94','#222222','#b5e4f4'];
 var SCREEN_WIDTH = window.innerWidth;
 var SCREEN_HEIGHT = window.innerHeight;
@@ -16,13 +17,13 @@ var ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT;
 var NEAR = 0.1;
 var FAR = 20000;
 var SPRITE_SIZE = 128;
-var RAW_DF, MAPPINGS;
+var RAW_DF, MAPPING;
 
 var OPTIONS = {
   datumInfo: false
 };
 
-var container, scene, camera, renderer, orbit, stats, mousestate, points;
+var container, scene, camera, renderer, orbit, stats, mousestate, points, scale;
 
 var datumDisplay = document.getElementById('datum-display');
 var legendDiv = document.getElementById('legend');
@@ -48,7 +49,7 @@ getJSON('query.json', function(err, p) {
   if (err != null) {
   } else {
     RAW_DF = p.data;
-    MAPPINGS = p.mappings;
+    MAPPING = p.mapping;
     plot();
   }
 });
@@ -59,21 +60,9 @@ function plot() {
 
   var keyboard = new THREEx.KeyboardState();
 
-  var square = document.createElement('canvas');
-      square.width = 128;
-      square.height = 128;
-  var squareCtx = square.getContext('2d');
-      squareCtx.beginPath();
-      squareCtx.rect(SPRITE_SIZE / 2 - SPRITE_SIZE * 0.45, SPRITE_SIZE / 2 - SPRITE_SIZE * 0.45,
-                     SPRITE_SIZE * 0.9, SPRITE_SIZE * 0.9);
-      squareCtx.fillStyle = 'green';
-      squareCtx.fill();
-      squareCtx.lineWidth = 5;
-      squareCtx.strokeStyle = '#003300';
-      squareCtx.stroke();
+  var discTxtr = new THREE.TextureLoader().load('textures/disc.png');
 
   //------------------------- Remap AES -------------------------//
-
 
   function normalize11(a, scale, offset) {
     scale = scale || 1;
@@ -83,41 +72,73 @@ function plot() {
     return a.map(function(k){return ((k-i)/(x-i)*2-1)*scale + offset});
   }
 
-  function convertFactorsToColors(a) {
-    var colors = [];
-    var mappings = {};
-    var levelCount = 0;
+  function convertFactorsToColors(fs) {
+    //       . materials = [ red, blue, blue, red, ... ]
+    // scale           
+    //       . mapping = { 1: { color: "red",  material: red,  indices: [0,1,4,...], legend: <red_leg> },
+    //                     2: { color: "blue", material: blue, indices: [2,3,5,...], legend: <blue_leg> } }
+    var materials = [];
+    var mapping = {};
 
-    for (i in a) {
-      var f = a[i].toString();
-      if (f in mappings) {
-        colors.push(mappings[f]);
+    for (var i in fs) {
+      var f = fs[i].toString();
+      if (f in mapping) {
+        materials.push(mapping[f].material);
+        mapping[f].indices.push(i);
       } else {
-        levelCount ++;
-        mappings[f] = COLOR_PALETTE[levelCount - 1];
-        colors.push(mappings[f]);
+        var color = COLOR_PALETTE[Object.keys(mapping).length];
+        var material = new THREE.SpriteMaterial( { map: discTxtr, color: new THREE.Color(color) } );
+
+        var item = document.createElement('div');
+        item.classList.add('item');
+        item.innerHTML = '<span class="color-patch" style="background-color: ' + color + '"></span>' + f;
+        let ii = f;
+        item.addEventListener('mouseover', function(e){highlightGroup(ii)});
+        item.addEventListener('mouseout', function(e){resetHighlightGroup(ii)});
+
+        mapping[f] = { color: color, material: material, legendItem: item, indices: [i]};
+        materials.push(mapping[f].material);
       }
     }
-    return { mappings: mappings, colors: colors };
+    return { materials: materials, mapping: mapping };
   }
 
   var AES_DF = {};
-  AES_DF.x = normalize11(RAW_DF[MAPPINGS.x], 100);
-  AES_DF.y = normalize11(RAW_DF[MAPPINGS.y], 100);
-  AES_DF.z = normalize11(RAW_DF[MAPPINGS.z], 100, 100);
-  if ('colour' in MAPPINGS) {
-    var scale = convertFactorsToColors(RAW_DF[MAPPINGS.colour]);
-    AES_DF.color = scale.colors;
-    drawLegend(scale.mappings, MAPPINGS.colour, 'color_discrete');
+  AES_DF.x = normalize11(RAW_DF[MAPPING.x], 100);
+  AES_DF.y = normalize11(RAW_DF[MAPPING.y], 100);
+  AES_DF.z = normalize11(RAW_DF[MAPPING.z], 100, 100);
+  if ('colour' in MAPPING) {
+    scale = convertFactorsToColors(RAW_DF[MAPPING.colour]);
+    console.log(scale);
+    AES_DF.material = scale.materials;
+    drawLegend(scale, MAPPING.colour, 'color_discrete');
   }
 
-  function drawLegend(mappings, name, type) {
+  function drawLegend(scale, legendTitle, type) {
     var colorLegend = document.createElement('div');
-    colorLegend.innerHTML = '<h2>' + name + '</h2>';
-    for (i in mappings) {
-      colorLegend.innerHTML += '<div>' + '<span class="color-patch" style="background-color: ' + mappings[i] +'"></span>' + i + '</div>';
+    var mapping = scale.mapping;
+
+    colorLegend.innerHTML = '<h2>' + legendTitle + '</h2>';
+    for (var i in mapping) {
+      colorLegend.appendChild(mapping[i].legendItem);
     }
     legendDiv.appendChild(colorLegend);
+  }
+
+  function highlightGroup(g) {
+    for (var i in scale.mapping) {
+      if (i != g) {
+        scale.mapping[i].material.opacity = 0.3;
+        scale.mapping[i].legendItem.classList.add('dimmed');
+      }
+    }
+  }
+
+  function resetHighlightGroup(g) {
+    for (var i in scale.mapping) {
+      scale.mapping[i].material.opacity = 1;
+      scale.mapping[i].legendItem.classList.remove('dimmed');
+    }
   }
 
   //------------------------ Handle events ----------------------//
@@ -209,17 +230,14 @@ function plot() {
       var x = AES_DF.x[i];
       var y = AES_DF.y[i];
       var z = AES_DF.z[i];
-      var color = AES_DF.color[i];
+      var material = AES_DF.material[i];
 
       var datum = {};
       for (var prop in RAW_DF) {
         datum[prop] = RAW_DF[prop][i];
       }
 
-      var discTxtr = new THREE.Texture(mkDisc(color));
-          discTxtr.needsUpdate = true;
-      var discMtrl = new THREE.SpriteMaterial( { map: discTxtr } );
-      var discSprt = new THREE.Sprite( discMtrl );
+      var discSprt = new THREE.Sprite( material );
       discSprt.position.set( x, z, y );
       discSprt.scale.set( 5, 5, 1 );
       discSprt.datum = datum;

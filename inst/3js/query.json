@@ -5077,7 +5077,7 @@
       false
     ]
   },
-  "mappings": {
+  "mapping": {
     "x": "x",
     "y": "y",
     "z": "z",
