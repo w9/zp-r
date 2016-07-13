@@ -1,7 +1,8 @@
+// TODO: the "color patches" should be threejs canvas themselves
 // TODO: should be able to toggle between 1:1:1 aspect ratio and the actual aspect ratio
-// TODO: use pretty scales (1, 2, 5, 10 ticks) used in ggplot2
+// TODO: use pretty scales (1, 2, 5, 10 ticks) used in ggplot2, drawing gray lines is good enough
+// TODO: should be able to specify a label layer
 // TODO: change the "show_datum" to use clicking instead of hovering to select point. add asterisk marking the selected point
-// TODO: for **discrete** groupings, should reuse material; furthermore, the "color patches" should be the canvas themselves when the grouping is discrete
 // TODO: change the base to something like http://threejs.org/examples/#webgl_geometry_spline_editor, exept it's infinitely large and there's fog
 // TODO: add drop shadow to the base, looks great
 // TODO: Temporal Anti-Aliasing (TAA), maybe for lines in the future
@@ -86,7 +87,7 @@ function plot() {
         mapping[f].indices.push(i);
       } else {
         var color = COLOR_PALETTE[Object.keys(mapping).length];
-        var material = new THREE.SpriteMaterial( { map: discTxtr, color: new THREE.Color(color) } );
+        var material = new THREE.SpriteMaterial( { map: discTxtr, color: new THREE.Color(color), fog: true } );
 
         var item = document.createElement('div');
         item.classList.add('item');
@@ -185,6 +186,9 @@ function plot() {
 
   function init() {
     scene = new THREE.Scene();
+
+    scene.fog = new THREE.Fog(0xffffff, 300, 700);
+    //scene.fog.color.setHSL( 0.51, 0.6, 0.6 );
 
     camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR );
     camera.position.set( 165, 120, 371 );
