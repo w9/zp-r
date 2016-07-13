@@ -4,7 +4,7 @@
 \alias{qplot3}
 \title{3D scatter plot on Rstudio viewer}
 \usage{
-qplot3(mappings, data, verbose_level = 0, show_datum = F)
+qplot3(mappings, data, verbose_level = 0)
 }
 \description{
 3D scatter plot on Rstudio viewer
@@ -12,6 +12,6 @@ qplot3(mappings, data, verbose_level = 0, show_datum = F)
 \examples{
 library(ggplot2)
 data(ret)
-qplot3(aes(x=x, y=y, z=z, color=group), data=ret, show_datum=T)
+qplot3(aes(x=x, y=y, z=z, color=group), data=ret)
 }
 

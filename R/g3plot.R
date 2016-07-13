@@ -4,8 +4,8 @@
 #' @examples
 #' library(ggplot2)
 #' data(ret)
-#' qplot3(aes(x=x, y=y, z=z, color=group), data=ret, show_datum=T)
-qplot3 <- function(mappings, data, verbose_level=0, show_datum=F) {
+#' qplot3(aes(x=x, y=y, z=z, color=group), data=ret)
+qplot3 <- function(mappings, data, verbose_level=0) {
   # TODO: mappings sanity check
 
   folder_name <- 'js05'
@@ -19,9 +19,7 @@ qplot3 <- function(mappings, data, verbose_level=0, show_datum=F) {
     if (verbose_level > 1) message(sprintf('Copy %s to %s', plotter_dir, temp_dir))
   }
 
-  options <- list(show_datum=show_datum)
-
-  json_string <- jsonlite::toJSON(list(data=data, mappings=lapply(mappings, as.character), options=options),
+  json_string <- jsonlite::toJSON(list(data=data, mappings=lapply(mappings, as.character)),
                                   dataframe='columns', auto_unbox=T)
 
   write(json_string, file.path(temp_dir, folder_name, 'query.json'));
