@@ -1,6 +1,5 @@
 // TODO: should be able to toggle between 1:1:1 aspect ratio and the actual aspect ratio
 // TODO: use pretty scales (1, 2, 5, 10 ticks) used in ggplot2
-// TODO: when hovering over the legend block, show lower all other groups' transparency
 // TODO: change the "show_datum" to use clicking instead of hovering to select point. add asterisk marking the selected point
 // TODO: for **discrete** groupings, should reuse material; furthermore, the "color patches" should be the canvas themselves when the grouping is discrete
 // TODO: change the base to something like http://threejs.org/examples/#webgl_geometry_spline_editor, exept it's infinitely large and there's fog
@@ -200,11 +199,9 @@ function plot() {
 
     THREEx.WindowResize(renderer, camera);
 
-    orbit = new THREE.OrbitControls( camera, renderer.domElement );
-    orbit.target0 = new THREE.Vector3(0,100,0);
+    orbit = new THREE.OrbitControls( camera, renderer.domElement, new THREE.Vector3(0,100,0));
     orbit.enableDamping = true;
     orbit.dampingFactor = 0.4;
-    orbit.reset();
     orbit.update();
 
     stats = new Stats();

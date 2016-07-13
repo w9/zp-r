@@ -13,7 +13,7 @@
 //    Zoom - middle mouse, or mousewheel / touch: two finger spread or squish
 //    Pan - right mouse, or arrow keys / touch: three finter swipe
 
-THREE.OrbitControls = function ( object, domElement ) {
+THREE.OrbitControls = function ( object, domElement, target ) {
 
 	this.object = object;
 
@@ -23,7 +23,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 	this.enabled = true;
 
 	// "target" sets the location of focus, where the object orbits around
-	this.target = new THREE.Vector3();
+	this.target = target || new THREE.Vector3();
 
 	// How far you can dolly in and out ( PerspectiveCamera only )
 	this.minDistance = 0;
@@ -78,7 +78,15 @@ THREE.OrbitControls = function ( object, domElement ) {
 	// for reset
 	this.target0 = this.target.clone();
 	this.position0 = this.object.position.clone();
+	this.offset0 = new THREE.Vector3();
+  this.offset0.copy(this.position0).sub(this.target0);
+	this.spherical0 = new THREE.Spherical();
+  this.spherical0.setFromVector3(this.position0);
+	this.target0 = this.target.clone();
 	this.zoom0 = this.object.zoom;
+
+  this.moveSpherical = this.spherical0;
+  this.moveTarget = this.target0;
 
 	//
 	// public methods
@@ -98,21 +106,30 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 	this.reset = function () {
 
-		scope.target.copy( scope.target0 );
-		scope.object.position.copy( scope.position0 );
-		scope.object.zoom = scope.zoom0;
+		//scope.target.copy( scope.target0 );
+		//scope.object.position.copy( scope.position0 );
+		//scope.object.zoom = scope.zoom0;
 
-		scope.object.updateProjectionMatrix();
-		scope.dispatchEvent( changeEvent );
+		//scope.object.updateProjectionMatrix();
+		//scope.dispatchEvent( changeEvent );
 
-		scope.update();
+		//scope.update();
 
-		state = STATE.NONE;
+		//state = STATE.NONE;
+    
+    this.moveTo(this.spherical0, this.target0);
 
 	};
 
+  this.moveTo = function (spherical, target) {
+    state = STATE.MOVE_TO;
+    this.moveSpherical = spherical;
+    this.moveTarget = target;
+  };
+
 	// this method is exposed, but perhaps it would be better if we can make it private...
 	this.update = function() {
+
 
 		var offset = new THREE.Vector3();
 
@@ -130,7 +147,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 			offset.copy( position ).sub( scope.target );
 
 			// rotate offset to "y-axis-is-up" space
-			offset.applyQuaternion( quat );
+			//offset.applyQuaternion( quat );
 
 			// angle from z-axis around y-axis
 			spherical.setFromVector3( offset );
@@ -141,30 +158,38 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 			}
 
-			spherical.theta += sphericalDelta.theta;
-			spherical.phi += sphericalDelta.phi;
+      if ( state === STATE.MOVE_TO ) {
+        let d = scope.dampingFactor;
+        spherical.theta = d * this.moveSpherical.theta + (1-d) * spherical.theta;
+        spherical.phi = d * this.moveSpherical.phi + (1-d) * spherical.phi;
+        spherical.radius = d * this.moveSpherical.radius + (1-d) * spherical.radius;
+        scope.target.multiplyScalar((1-d)/d).add(scope.target0).multiplyScalar(d);
+      } else {
+        spherical.theta += sphericalDelta.theta;
+        spherical.phi += sphericalDelta.phi;
 
-			// restrict theta to be between desired limits
-			spherical.theta = Math.max( scope.minAzimuthAngle, Math.min( scope.maxAzimuthAngle, spherical.theta ) );
+        // restrict theta to be between desired limits
+        spherical.theta = Math.max( scope.minAzimuthAngle, Math.min( scope.maxAzimuthAngle, spherical.theta ) );
 
-			// restrict phi to be between desired limits
-			spherical.phi = Math.max( scope.minPolarAngle, Math.min( scope.maxPolarAngle, spherical.phi ) );
+        // restrict phi to be between desired limits
+        spherical.phi = Math.max( scope.minPolarAngle, Math.min( scope.maxPolarAngle, spherical.phi ) );
 
-			spherical.makeSafe();
+        spherical.makeSafe();
 
 
-			spherical.radius *= scale;
+        spherical.radius *= scale;
 
-			// restrict radius to be between desired limits
-			spherical.radius = Math.max( scope.minDistance, Math.min( scope.maxDistance, spherical.radius ) );
+        // restrict radius to be between desired limits
+        spherical.radius = Math.max( scope.minDistance, Math.min( scope.maxDistance, spherical.radius ) );
 
-			// move target to panned location
-			scope.target.add( panOffset );
+        // move target to panned location
+        scope.target.add( panOffset );
+      }
 
 			offset.setFromSpherical( spherical );
 
 			// rotate offset back to "camera-up-vector-is-up" space
-			offset.applyQuaternion( quatInverse );
+			//offset.applyQuaternion( quatInverse );
 
 			position.copy( scope.target ).add( offset );
 
@@ -239,7 +264,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 	var startEvent = { type: 'start' };
 	var endEvent = { type: 'end' };
 
-	var STATE = { NONE : - 1, ROTATE : 0, DOLLY : 1, PAN : 2, TOUCH_ROTATE : 3, TOUCH_DOLLY : 4, TOUCH_PAN : 5 };
+	var STATE = { NONE : - 1, ROTATE : 0, DOLLY : 1, PAN : 2, TOUCH_ROTATE : 3, TOUCH_DOLLY : 4, TOUCH_PAN : 5, MOVE_TO : 6 };
 
 	var state = STATE.NONE;
 
