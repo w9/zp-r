@@ -13,6 +13,10 @@ body {
   overflow: visible;
 }
 
+#datum-display {
+  color: #000000;
+}
+
 #toolbar {
   -webkit-user-select: none;
 }

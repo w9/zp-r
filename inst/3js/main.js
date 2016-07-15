@@ -1,7 +1,8 @@
+// TODO: add "multiple coordinates" functionality (e.g., for PCA and MDS), and maybe multiple scales as well
+// TODO: use "BufferGeometry" and "PointMaterial" to render points. aspect ratio toggle can be changed accordingly
 // TODO: the "color patches" should be threejs canvas themselves
 // TODO: use pretty scales (1, 2, 5, 10 ticks) used in ggplot2, drawing gray lines is good enough 
 // TODO: should be able to specify a label layer
-// TODO: change the "show_datum" to use clicking instead of hovering to select point. add asterisk marking the selected point
 // TODO: change the base to something like http://threejs.org/examples/#webgl_geometry_spline_editor, exept it's infinitely large and there's fog
 // TODO: add drop shadow to the base, looks great
 // TODO: Temporal Anti-Aliasing (TAA), maybe for lines in the future
@@ -32,7 +33,7 @@ function highlightGroup(g) {
   var m = AES_DF.scale.mapping;
   for (var i in m) {
     if (i != g) {
-      m[i].material.opacity = 0.3;
+      m[i].material.opacity = 0.1;
       m[i].legendItem.classList.add('dimmed');
     }
   }
@@ -117,13 +118,13 @@ GGPLOT3.Aes.prototype.changeAspectToXYZ = function(xx, yy, zz) {
 }
 
 function syncGeometryWithAes() {
-  // animate the points
-  for (var i in points) {
+  // animate the _points
+  for (var i in _points) {
     let ii = i;
     let a = {
-      x: points[ii].position.x,
-      z: points[ii].position.y,
-      y: points[ii].position.z
+      x: _points[ii].position.x,
+      z: _points[ii].position.y,
+      y: _points[ii].position.z
     };
     let b = {
       x: AES_DF.x[ii],
@@ -132,9 +133,19 @@ function syncGeometryWithAes() {
     };
 
     (new TWEEN.Tween(a)).to(b, 250).easing(TWEEN.Easing.Exponential.Out)
-      .onUpdate(function(){ points[ii].position.set(this.x, this.z, this.y); })
+      .onUpdate(function(){ _points[ii].position.set(this.x, this.z, this.y); })
       .start();
+
+    // animate the crosshairs
+    if (_points[ii] === _selectedObj) {
+      (new TWEEN.Tween(a)).to(b, 250).easing(TWEEN.Easing.Exponential.Out)
+        .onUpdate(function(){
+          _crosshairs.position.set(this.x, this.z, this.y);
+        })
+        .start();
+    }
   }
+
 
   // animate the floor
   var newFloorVertices = [
@@ -161,11 +172,12 @@ function syncGeometryWithAes() {
       })
       .start();
   }
+
 }
 
 GGPLOT3.ASPECT_STATE = { NONE: 0, TRANSITIONING: 1 };
 
-var COLOR_PALETTE = ['#01a0e4','#db2d20','#01a252','#a16a94','#222222','#b5e4f4'];
+var COLOR_PALETTE = ['#01a0e4','#db2d20','#01a252','#a16a94','#555555','#b5e4f4'];
 var SCREEN_WIDTH = window.innerWidth;
 var SCREEN_HEIGHT = window.innerHeight;
 var VIEW_ANGLE = 45;
@@ -174,28 +186,30 @@ var NEAR = 0.1;
 var FAR = 20000;
 var SPRITE_SIZE = 128;
 var RAW_DF, MAPPING, AES_DF;
+
 var _aspect_state = GGPLOT3.ASPECT_STATE.NONE;
 var _aspect_original = false;
 
-var OPTIONS = {
-  datumInfo: false
-};
-
-var container;
-var scene;
-var camera;
+var _scene;
+var _scene_overlay;
+var _camera;
 var renderer;
 var orbit;
 var stats;
-var mousestate;
-var points;
+var _points;
+var _selectedObj;
 var floor;
+var _crosshairs;
 
+var container = document.getElementById( 'plot-container' );
 var datumDisplay = document.getElementById('datum-display');
 var legendDiv = document.getElementById('legend');
-var datumButton = document.getElementById('datum-button');
 var resetCameraButton = document.getElementById('reset-camera-button');
 var toggleAspectButton = document.getElementById('toggle-aspect-button');
+
+
+var _mouse;
+var _raycaster;
 
 function getJSON(url, callback) {
   var xhr = new XMLHttpRequest();
@@ -222,8 +236,11 @@ getJSON('query.json', function(err, p) {
 });
 
 function plot() {
-  points = [];
-  selecteObj = null;
+  _points = [];
+  _mouse = new THREE.Vector2(Infinity, Infinity);
+  _raycaster = new THREE.Raycaster();
+  _selectedObj = null;
+
 
   var keyboard = new THREEx.KeyboardState();
 
@@ -247,17 +264,8 @@ function plot() {
   }
 
   //------------------------ Handle events ----------------------//
-  
-  datumButton.addEventListener('click', function(e) {
-    OPTIONS.datumInfo = !OPTIONS.datumInfo;
-    datumDisplay.hidden = !OPTIONS.datumInfo;
-    if (OPTIONS.datumInfo) {
-      datumButton.classList.add('activated');
-    } else {
-      datumButton.classList.remove('activated');
-    }
-  });
 
+  
   resetCameraButton.addEventListener('click', function(e) {
     orbit.reset();
   });
@@ -285,123 +293,135 @@ function plot() {
     }
   });
 
-  init();
-  animate();
-
   //-------------------------------------------------------------//
 
-  function mkDisc(color) {
-    var disc = document.createElement('canvas');
-        disc.width = 128;
-        disc.height = 128;
-    var discCtx = disc.getContext('2d');
-        discCtx.beginPath();
-        discCtx.arc(SPRITE_SIZE / 2, SPRITE_SIZE / 2, SPRITE_SIZE * 0.45, 0, 2 * Math.PI, false);
-        discCtx.fillStyle = color;
-        discCtx.fill();
-    return disc;
-  }
+  _scene = new THREE.Scene();
 
-  function init() {
-    scene = new THREE.Scene();
+  _scene.fog = new THREE.Fog(0xffffff, 400, 1000);
 
-    scene.fog = new THREE.Fog(0xffffff, 400, 1000);
+  _camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR );
+  _camera.position.set( 165, 120, 371 );
+  _scene.add( _camera );
 
-    camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR );
-    camera.position.set( 165, 120, 371 );
-    scene.add( camera );
+  renderer = new THREE.WebGLRenderer( { antialias:true } );
+  renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+  renderer.setClearColor(0xffffff, 1);
+  renderer.autoClear = false;
 
-    renderer = new THREE.WebGLRenderer( { antialias:true } );
-    renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
-    renderer.setClearColor(0xffffff, 1);
+  renderer.domElement.addEventListener('mousemove', function(e) {
+    _mouse.x = ( e.clientX / window.innerWidth ) * 2 - 1;
+    _mouse.y = - ( e.clientY / window.innerHeight ) * 2 + 1;
+  });
 
-    container = document.getElementById( 'plot-container' );
-    container.appendChild( renderer.domElement );
-
-    THREEx.WindowResize(renderer, camera);
-
-    orbit = new THREE.OrbitControls( camera, renderer.domElement, new THREE.Vector3(0,0,0));
-    orbit.enableDamping = true;
-    orbit.dampingFactor = 0.4;
-    orbit.update();
-
-    stats = new Stats();
-    stats.domElement.style.position = 'absolute';
-    stats.domElement.style.bottom = '0px';
-    stats.domElement.style.zIndex = 100;
-    stats.domElement.hidden = true;
-    container.appendChild( stats.domElement );
-
-    var floorMtrl = new THREE.LineBasicMaterial( { color: 0x000000 });
-    var floorGtry = new THREE.Geometry();
-        floorGtry.vertices.push(new THREE.Vector3( AES_DF.x.lo, AES_DF.z.lo, AES_DF.y.lo));
-        floorGtry.vertices.push(new THREE.Vector3( AES_DF.x.hi, AES_DF.z.lo, AES_DF.y.lo));
-        floorGtry.vertices.push(new THREE.Vector3( AES_DF.x.hi, AES_DF.z.lo, AES_DF.y.hi));
-        floorGtry.vertices.push(new THREE.Vector3( AES_DF.x.lo, AES_DF.z.lo, AES_DF.y.hi));
-        floorGtry.vertices.push(new THREE.Vector3( AES_DF.x.lo, AES_DF.z.lo, AES_DF.y.lo));
-    floor = new THREE.Line(floorGtry, floorMtrl);
-    scene.add(floor);
-
-    // Sprites
-    
-    for (var i in AES_DF.index) {
-      var x = AES_DF.x[i];
-      var y = AES_DF.y[i];
-      var z = AES_DF.z[i];
-      var material = AES_DF.material[i];
-
-      var datum = {};
-      for (var prop in RAW_DF) {
-        datum[prop] = RAW_DF[prop][i];
+  renderer.domElement.addEventListener('click', function(e) {
+    if (e.ctrlKey) {
+      _raycaster.setFromCamera( _mouse, _camera );
+      var intersects = _raycaster.intersectObjects( _points );
+      if (intersects.length > 0) {
+        if (intersects[0].object != _selectedObj) {
+          _selectedObj = intersects[0].object;
+          var outputs = [];
+          for (var prop in _selectedObj.datum) {
+            outputs.push(prop + ' = ' + _selectedObj.datum[prop]);
+          }
+          datumDisplay.innerText = outputs.join('\n');
+          _crosshairs.position.copy(_selectedObj.position);
+          _crosshairs.visible = true;
+        }
+      } else {
+        _selectedObj = null;
+        datumDisplay.innerText = '';
+        _crosshairs.visible = false;
       }
+    }
+  });
 
-      var discSprt = new THREE.Sprite( material );
-      discSprt.position.set( x, z, y );
-      discSprt.scale.set( 5, 5, 1 );
-      discSprt.datum = datum;
-      scene.add( discSprt );
+  container.appendChild( renderer.domElement );
 
-      points.push(discSprt);
+  THREEx.WindowResize(renderer, _camera);
+
+  orbit = new THREE.OrbitControls( _camera, renderer.domElement, new THREE.Vector3(0,0,0));
+  orbit.enableDamping = true;
+  orbit.dampingFactor = 0.4;
+  orbit.update();
+
+  stats = new Stats();
+  stats.domElement.style.position = 'absolute';
+  stats.domElement.style.bottom = '0px';
+  stats.domElement.style.zIndex = 100;
+  stats.domElement.hidden = true;
+  container.appendChild( stats.domElement );
+
+  var floorMtrl = new THREE.LineBasicMaterial( { color: 0x000000 });
+  var floorGtry = new THREE.Geometry();
+      floorGtry.vertices.push(new THREE.Vector3( AES_DF.x.lo, AES_DF.z.lo, AES_DF.y.lo));
+      floorGtry.vertices.push(new THREE.Vector3( AES_DF.x.hi, AES_DF.z.lo, AES_DF.y.lo));
+      floorGtry.vertices.push(new THREE.Vector3( AES_DF.x.hi, AES_DF.z.lo, AES_DF.y.hi));
+      floorGtry.vertices.push(new THREE.Vector3( AES_DF.x.lo, AES_DF.z.lo, AES_DF.y.hi));
+      floorGtry.vertices.push(new THREE.Vector3( AES_DF.x.lo, AES_DF.z.lo, AES_DF.y.lo));
+  floor = new THREE.Line(floorGtry, floorMtrl);
+  _scene.add(floor);
+
+  // Sprites
+  
+  for (var i in AES_DF.index) {
+    var x = AES_DF.x[i];
+    var y = AES_DF.y[i];
+    var z = AES_DF.z[i];
+    var material = AES_DF.material[i];
+
+    var datum = {};
+    datum._index = i;
+    for (var prop in RAW_DF) {
+      datum[prop] = RAW_DF[prop][i];
     }
 
-    mousestate = new LIB.MouseState(document, camera, points);
+    var discSprt = new THREE.Sprite( material );
+    discSprt.position.set( x, z, y );
+    discSprt.scale.set( 5, 5, 1 );
+    discSprt.datum = datum;
+    _scene.add( discSprt );
 
+    _points.push(discSprt);
   }
 
-  function animate() 
-  {
+  // overlay scene
+
+  _scene_overlay = new THREE.Scene();
+
+  var crosshairsTxtr = new THREE.TextureLoader().load('textures/crosshairs.png');
+  var crosshairsMtrl = new THREE.SpriteMaterial({
+    map: crosshairsTxtr,
+    color: new THREE.Color('#000000')
+  });
+  _crosshairs = new THREE.Sprite( crosshairsMtrl );
+  _crosshairs.position.set( Infinity, Infinity, Infinity );
+  _crosshairs.visible = false;
+  _crosshairs.tweenObj = { size: 10 };
+  _crosshairs.tween = new TWEEN.Tween(_crosshairs.tweenObj)
+  _crosshairs.tween.to({ size: 14 }, 800).easing(TWEEN.Easing.Sinusoidal.InOut).repeat(Infinity).yoyo(true)
+    .onUpdate(function(){ _crosshairs.scale.set(this.size, this.size, 1) })
+    .start()
+  _scene_overlay.add( _crosshairs );
+
+  animate();
+
+  function animate() {
     requestAnimationFrame( animate );
     render();   
     update();
   }
 
-  function update()
-  {
-    if (OPTIONS.datumInfo) {
-      mousestate.detectHovering(
-        function(obj) {
-          if (OPTIONS.datumInfo) {
-            var outputs = [];
-            for (var prop in obj.datum) {
-              outputs.push(prop + ' = ' + obj.datum[prop]);
-            }
-            datumDisplay.innerText = outputs.join('\n');
-          }
-        },
-
-        function(obj) {
-          //datumDisplay.innerText = '';
-        }
-      );
-    }
-
+  function update() {
     TWEEN.update();
     orbit.update();
     stats.update();
   }
 
-  function render() 
-  {
-    renderer.render( scene, camera );
+  function render() {
+    renderer.clear();
+    renderer.render( _scene, _camera );
+    renderer.clearDepth();
+    renderer.render( _scene_overlay, _camera );
   }
 }
