@@ -2,6 +2,7 @@
 // TODO: use "BufferGeometry" and "PointMaterial" to render points. aspect ratio toggle can be changed accordingly
 // TODO: the "color patches" should be threejs canvas themselves
 // TODO: use pretty scales (1, 2, 5, 10 ticks) used in ggplot2, drawing gray lines is good enough 
+// TODO: implement continuous scale
 // TODO: should be able to specify a label layer
 // TODO: change the base to something like http://threejs.org/examples/#webgl_geometry_spline_editor, exept it's infinitely large and there's fog
 // TODO: add drop shadow to the base, looks great
@@ -26,6 +27,20 @@ function range0(hi) {
   }
   return a;
 }
+
+function drawLegendDiscrete(aes) {
+  var scale = aes.scale;
+  var legendTitle = MAPPING.colour;
+  var colorLegend = document.createElement('div');
+  var mapping = scale.mapping;
+
+  colorLegend.innerHTML = '<h2>' + legendTitle + '</h2>';
+  for (var i in mapping) {
+    colorLegend.appendChild(mapping[i].legendItem);
+  }
+  return colorLegend;
+}
+
 
 var discTxtr = new THREE.TextureLoader().load('textures/disc.png');
 
@@ -92,10 +107,16 @@ GGPLOT3.Aes = function(raw, mapping, aspect) {
   this.mapping = mapping;
   var aspect = aspect || GGPLOT3.ASPECT.EQUAL;
   this.changeAspectTo(aspect);
+  this.legend = null;
 
   if ('colour' in mapping) {
     this.scale = convertFactorsToColors(raw[mapping.colour]);
     this.material = this.scale.materials;
+    this.legend = drawLegendDiscrete(this);
+    legendDiv.appendChild(this.legend);
+  } else {
+    let material = new THREE.SpriteMaterial( { map: discTxtr, color: new THREE.Color(COLOR_PALETTE[0]), fog: true } );
+    this.material = this.index.map(function(){return material});
   }
 }
 
@@ -248,20 +269,6 @@ function plot() {
   //------------------------- Remap AES -------------------------//
 
   AES_DF = new GGPLOT3.Aes(RAW_DF, MAPPING);
-  drawLegendDiscrete(AES_DF);
-
-  function drawLegendDiscrete(aes) {
-    var scale = aes.scale;
-    var legendTitle = MAPPING.colour;
-    var colorLegend = document.createElement('div');
-    var mapping = scale.mapping;
-
-    colorLegend.innerHTML = '<h2>' + legendTitle + '</h2>';
-    for (var i in mapping) {
-      colorLegend.appendChild(mapping[i].legendItem);
-    }
-    legendDiv.appendChild(colorLegend);
-  }
 
   //------------------------ Handle events ----------------------//
 
@@ -352,7 +359,7 @@ function plot() {
   stats.domElement.hidden = true;
   container.appendChild( stats.domElement );
 
-  var floorMtrl = new THREE.LineBasicMaterial( { color: 0x000000 });
+  var floorMtrl = new THREE.LineBasicMaterial( { color: 0x777777 });
   var floorGtry = new THREE.Geometry();
       floorGtry.vertices.push(new THREE.Vector3( AES_DF.x.lo, AES_DF.z.lo, AES_DF.y.lo));
       floorGtry.vertices.push(new THREE.Vector3( AES_DF.x.hi, AES_DF.z.lo, AES_DF.y.lo));
