@@ -1,7 +1,9 @@
+// TODO: use an iframe container linked with json data embedded (this makes "going back" in Rstudio possible)
 // TODO: add "multiple coordinates" functionality (e.g., for PCA and MDS), and maybe multiple scales as well
 // TODO: use "BufferGeometry" and "PointMaterial" to render points. aspect ratio toggle can be changed accordingly
 // TODO: the "color patches" should be threejs canvas themselves
 // TODO: use pretty scales (1, 2, 5, 10 ticks) used in ggplot2, drawing gray lines is good enough 
+// TODO: add **instant type** search functionality, very useful when the dots are overwhelmingly many
 // TODO: implement continuous scale
 // TODO: should be able to specify a label layer
 // TODO: change the base to something like http://threejs.org/examples/#webgl_geometry_spline_editor, exept it's infinitely large and there's fog
@@ -332,26 +334,24 @@ function plot() {
     _mouse.y = - ( e.clientY / window.innerHeight ) * 2 + 1;
   });
 
-  renderer.domElement.addEventListener('click', function(e) {
-    if (e.ctrlKey) {
-      _raycaster.setFromCamera( _mouse, _camera );
-      var intersects = _raycaster.intersectObjects( _points );
-      if (intersects.length > 0) {
-        if (intersects[0].object != _selectedObj) {
-          _selectedObj = intersects[0].object;
-          var outputs = [];
-          for (var prop in _selectedObj.datum) {
-            outputs.push(prop + ' = ' + _selectedObj.datum[prop]);
-          }
-          datumDisplay.innerText = outputs.join('\n');
-          _crosshairs.position.copy(_selectedObj.position);
-          _crosshairs.visible = true;
+  renderer.domElement.addEventListener('dblclick', function(e) {
+    _raycaster.setFromCamera( _mouse, _camera );
+    var intersects = _raycaster.intersectObjects( _points );
+    if (intersects.length > 0) {
+      if (intersects[0].object != _selectedObj) {
+        _selectedObj = intersects[0].object;
+        var outputs = [];
+        for (var prop in _selectedObj.datum) {
+          outputs.push(prop + ' = ' + _selectedObj.datum[prop]);
         }
-      } else {
-        _selectedObj = null;
-        datumDisplay.innerText = '';
-        _crosshairs.visible = false;
+        datumDisplay.innerText = outputs.join('\n');
+        _crosshairs.position.copy(_selectedObj.position);
+        _crosshairs.visible = true;
       }
+    } else {
+      _selectedObj = null;
+      datumDisplay.innerText = '';
+      _crosshairs.visible = false;
     }
   });
 
@@ -390,7 +390,8 @@ function plot() {
     var material = AES_DF.material[i];
 
     var datum = {};
-    datum._index = i;
+    // note that _index is 1-based
+    datum._index = parseInt(i)+1;
     for (var prop in RAW_DF) {
       datum[prop] = RAW_DF[prop][i];
     }
