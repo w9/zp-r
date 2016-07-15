@@ -8,7 +8,7 @@
 qplot3 <- function(mapping, data, verbose_level=0) {
   # TODO: mapping sanity check
 
-  folder_name <- 'js11'
+  folder_name <- 'js12'
   temp_dir <- tempdir()
   if (verbose_level > 1) message(sprintf('Creating directory %s', temp_dir))
 
