@@ -100,9 +100,21 @@ GGPLOT3.ASPECT = { EQUAL: 0, ORIGINAL: 1 };
 
 GGPLOT3.Aes = function(raw, mapping, aspect) {
   this.index = range0(raw[mapping.x].length);
-  this.x = raw[mapping.x];
-  this.y = raw[mapping.y];
-  this.z = raw[mapping.z];
+  // note the axes are rotated for the gl space
+  this.z = raw[mapping.x];
+  this.x = raw[mapping.y];
+  this.y = raw[mapping.z];
+
+  this.xMax = Math.max.apply(null, this.x);
+  this.xMin = Math.min.apply(null, this.x);
+  this.xRange = this.xMax - this.xMin;
+  this.yMax = Math.max.apply(null, this.y);
+  this.yMin = Math.min.apply(null, this.y);
+  this.yRange = this.yMax - this.yMin;
+  this.zMax = Math.max.apply(null, this.z);
+  this.zMin = Math.min.apply(null, this.z);
+  this.zRange = this.zMax - this.zMin;
+
   this.raw = raw;
   this.mapping = mapping;
   var aspect = aspect || GGPLOT3.ASPECT.EQUAL;
@@ -124,10 +136,10 @@ GGPLOT3.Aes.prototype.changeAspectTo = function(aspect) {
   if (!aspect || aspect == GGPLOT3.ASPECT.EQUAL) {
     this.changeAspectToXYZ(100, 100, 100);
   } else if (aspect == GGPLOT3.ASPECT.ORIGINAL) {
-    var rx = Math.max.apply(null, this.raw[this.mapping.x]) - Math.min.apply(null, this.raw[this.mapping.x]);
-    var ry = Math.max.apply(null, this.raw[this.mapping.y]) - Math.min.apply(null, this.raw[this.mapping.y]);
-    var rz = Math.max.apply(null, this.raw[this.mapping.z]) - Math.min.apply(null, this.raw[this.mapping.z]);
-    var coef = 100 / Math.cbrt(rx * ry * rz);
+    let rx = this.xRange;
+    let ry = this.yRange;
+    let rz = this.zRange;
+    let coef = 100 / Math.cbrt(rx * ry * rz);
     this.changeAspectToXYZ(coef * rx, coef * ry, coef * rz);
   }
 }
@@ -144,8 +156,8 @@ function syncGeometryWithAes() {
     let ii = i;
     let a = {
       x: _points[ii].position.x,
-      z: _points[ii].position.y,
-      y: _points[ii].position.z
+      y: _points[ii].position.y,
+      z: _points[ii].position.z
     };
     let b = {
       x: AES_DF.x[ii],
@@ -154,14 +166,14 @@ function syncGeometryWithAes() {
     };
 
     (new TWEEN.Tween(a)).to(b, 250).easing(TWEEN.Easing.Exponential.Out)
-      .onUpdate(function(){ _points[ii].position.set(this.x, this.z, this.y); })
+      .onUpdate(function(){ _points[ii].position.set(this.x, this.y, this.z); })
       .start();
 
     // animate the crosshairs
     if (_points[ii] === _selectedObj) {
       (new TWEEN.Tween(a)).to(b, 250).easing(TWEEN.Easing.Exponential.Out)
         .onUpdate(function(){
-          _crosshairs.position.set(this.x, this.z, this.y);
+          _crosshairs.position.set(this.x, this.y, this.z);
         })
         .start();
     }
@@ -170,11 +182,11 @@ function syncGeometryWithAes() {
 
   // animate the floor
   var newFloorVertices = [
-    { x: AES_DF.x.lo, y: AES_DF.z.lo, z: AES_DF.y.lo },
-    { x: AES_DF.x.hi, y: AES_DF.z.lo, z: AES_DF.y.lo },
-    { x: AES_DF.x.hi, y: AES_DF.z.lo, z: AES_DF.y.hi },
-    { x: AES_DF.x.lo, y: AES_DF.z.lo, z: AES_DF.y.hi },
-    { x: AES_DF.x.lo, y: AES_DF.z.lo, z: AES_DF.y.lo }
+    { x: AES_DF.x.lo, y: AES_DF.y.lo, z: AES_DF.z.lo },
+    { x: AES_DF.x.hi, y: AES_DF.y.lo, z: AES_DF.z.lo },
+    { x: AES_DF.x.hi, y: AES_DF.y.lo, z: AES_DF.z.hi },
+    { x: AES_DF.x.lo, y: AES_DF.y.lo, z: AES_DF.z.hi },
+    { x: AES_DF.x.lo, y: AES_DF.y.lo, z: AES_DF.z.lo }
   ];
 
   for (var i in floor.geometry.vertices) {
@@ -307,7 +319,7 @@ function plot() {
   _scene.fog = new THREE.Fog(0xffffff, 400, 1000);
 
   _camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR );
-  _camera.position.set( 165, 120, 371 );
+  _camera.position.set( -400, 0, -130 );
   _scene.add( _camera );
 
   renderer = new THREE.WebGLRenderer( { antialias:true } );
@@ -361,11 +373,11 @@ function plot() {
 
   var floorMtrl = new THREE.LineBasicMaterial( { color: 0x777777 });
   var floorGtry = new THREE.Geometry();
-      floorGtry.vertices.push(new THREE.Vector3( AES_DF.x.lo, AES_DF.z.lo, AES_DF.y.lo));
-      floorGtry.vertices.push(new THREE.Vector3( AES_DF.x.hi, AES_DF.z.lo, AES_DF.y.lo));
-      floorGtry.vertices.push(new THREE.Vector3( AES_DF.x.hi, AES_DF.z.lo, AES_DF.y.hi));
-      floorGtry.vertices.push(new THREE.Vector3( AES_DF.x.lo, AES_DF.z.lo, AES_DF.y.hi));
-      floorGtry.vertices.push(new THREE.Vector3( AES_DF.x.lo, AES_DF.z.lo, AES_DF.y.lo));
+      floorGtry.vertices.push(new THREE.Vector3( AES_DF.x.lo, AES_DF.y.lo, AES_DF.z.lo));
+      floorGtry.vertices.push(new THREE.Vector3( AES_DF.x.hi, AES_DF.y.lo, AES_DF.z.lo));
+      floorGtry.vertices.push(new THREE.Vector3( AES_DF.x.hi, AES_DF.y.lo, AES_DF.z.hi));
+      floorGtry.vertices.push(new THREE.Vector3( AES_DF.x.lo, AES_DF.y.lo, AES_DF.z.hi));
+      floorGtry.vertices.push(new THREE.Vector3( AES_DF.x.lo, AES_DF.y.lo, AES_DF.z.lo));
   floor = new THREE.Line(floorGtry, floorMtrl);
   _scene.add(floor);
 
@@ -384,7 +396,7 @@ function plot() {
     }
 
     var discSprt = new THREE.Sprite( material );
-    discSprt.position.set( x, z, y );
+    discSprt.position.set( x, y, z );
     discSprt.scale.set( 5, 5, 1 );
     discSprt.datum = datum;
     _scene.add( discSprt );
