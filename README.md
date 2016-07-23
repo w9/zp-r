@@ -13,3 +13,8 @@ Features
 * ggplot2-like relational data language
 * allows for picking data dynamically
 * allows for adjusting of aspect ratio
+
+Screenshot
+----------
+
+![screenshot](screenshot.png)
