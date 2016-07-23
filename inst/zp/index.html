@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="lib/three.js"></script>
+    <script src="lib/Tween.js"></script>
+    <script src="lib/detector.js"></script>
+    <script src="lib/orbit.js"></script>
+    <script src="lib/keyboardstate.js"></script>
+    <script src="lib/windowresize.js"></script>
+    <script src="lib/stats.js"></script>
+    <script src="lib/mousestate.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="main.css">
+  </head>
+  <body>
+    <div id="plot-container"></div>
+    <div id="legend"></div>
+    <div id="overlay">
+      <div id="toolbar">
+        <i id="reset-camera-button" title="reset camera angle" class="material-icons">youtube_searched_for</i>
+        <i id="toggle-aspect-button" title="toggle aspect ratio between 1:1:1 and original" class="material-icons">aspect_ratio</i>
+      </div>
+      <div id="datum-display"></div>
+    </div>
+    <script src="main.js"></script>
+  </body>
+</html>
