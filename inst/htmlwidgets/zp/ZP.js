@@ -1,4 +1,4 @@
-// TODO: in "orthogonal views", zooming and panning should be allowed, whereas rotating quits it
+// TODO: in "orthogonal views", zooming and panning should be allowed, whereas rotating quits it (dispatch a "startRotating" event in orbit.js, or maybe forbits it altogether??
 // TODO: implement continuous scale
 // TODO: double click should add a label following that dot, using the "label" aes
 // TODO: add "multiple coordinates" functionality (e.g., for PCA and MDS), and maybe multiple **mappings** as well
@@ -152,43 +152,47 @@ ZP.Aes = function(data_, mapping_, aspect_) {
   }
 
   function convertFactorsToColors(fs) {
-    //       . materials = [ red, blue, blue, red, ... ]
-    // scale           
-    //       . mapping = { 'a': { color: "red",  material: red,  indices: [0,1,4,...], legend: <red_leg> },
-    //                     'b': { color: "blue", material: blue, indices: [2,3,5,...], legend: <blue_leg> } }
+    // scale . levels = ['a', 'b']
     //
-    //       . levels = ['a', 'b']
+    //       . mapping = { 'a': { color: "red",  material: red,  indices: [0,1,4,...], legend: <red_leg>,  dimmed: false },
+    //                     'b': { color: "blue", material: blue, indices: [2,3,5,...], legend: <blue_leg>, dimmed: false }}
+    //
+    //       . materials = [ red, blue, blue, red, ... ]
 
-    var materials = [];
-    var mapping = {};
-    var levels = [];
-
-    for (var i in fs) {
-      var f = fs[i].toString();
-      if (f in mapping) {
-        materials.push(mapping[f].material);
-        mapping[f].indices.push(i);
-      } else {
+    let levels = [];
+    for (let i=0; i<fs.length; i++) {
+      let f = fs[i].toString();
+      if (levels.indexOf(f) < 0) {
         levels.push(f);
-
-        var color = ZP.COLOR_PALETTE[Object.keys(mapping).length];
-        var material = new THREE.SpriteMaterial( { map: discTxtr, color: new THREE.Color(color), fog: true } );
-
-        var item = document.createElement('div');
-        item.classList.add('item');
-        item.innerHTML = '<span class="color-patch" style="background-color: ' + color + '"></span>' + f;
-        let ii = f;
-        //item.addEventListener('mouseover', function(e){highlightGroup(ii)});
-        //item.addEventListener('mouseout', function(e){resetHighlightGroup(ii)});
-        item.addEventListener('click', function(e){e.ctrlKey ? onlyShowOneGroup(ii) : toggleGroup(ii)});
-        item.addEventListener('dblclick', function(e){e.stopPropagation()});
-
-        mapping[f] = { color: color, material: material, legendItem: item, indices: [i]};
-        materials.push(mapping[f].material);
       }
     }
+    levels = levels.sort();
+    
+    let mapping = {};
+    for (let i=0; i<levels.length; i++) {
+      let f = levels[i];
 
-    return { materials: materials, mapping: mapping, levels: levels.sort() };
+      var color = ZP.COLOR_PALETTE[i];
+      var material = new THREE.SpriteMaterial( { map: discTxtr, color: new THREE.Color(color), fog: true } );
+
+      var item = document.createElement('div');
+      item.classList.add('item');
+      item.innerHTML = '<span class="color-patch" style="background-color: ' + color + '"></span>' + f;
+      let ff = f;
+      item.addEventListener('click', function(e){e.ctrlKey ? onlyShowOneGroup(ff) : toggleGroup(ff)});
+      item.addEventListener('dblclick', function(e){e.stopPropagation()});
+
+      mapping[f] = { color: color, material: material, legendItem: item, indices: [], dimmed: false};
+    }
+
+    let materials = [];
+    for (let i=0; i<fs.length; i++) {
+      let f = fs[i].toString();
+      materials.push(mapping[f].material);
+      mapping[f].indices.push(i);
+    }
+
+    return { materials: materials, mapping: mapping, levels: levels };
   }
 
 
@@ -376,8 +380,6 @@ ZP.ZP = function(el_, width_, height_) {
 
     
     resetCameraButton.addEventListener('click', function(e) {
-      console.log(JSON.stringify(_camera.position));
-      JSON.stringify
       _ortho = 'none';
       _orbit.reset();
     });
@@ -444,8 +446,23 @@ ZP.ZP = function(el_, width_, height_) {
     });
 
     _renderer.domElement.addEventListener('dblclick', function(e) {
+      let undimmed_points = [];
+      let levels = _aes.scale.levels;
+      let mapping = _aes.scale.mapping;
+
+      for (let i in levels) {
+        let l = levels[i];
+        let ids = mapping[l].indices;
+        if (!mapping[l].dimmed) {
+          for (let j=0; j<ids.length; j++) {
+            undimmed_points.push(_points[ids[j]]);
+          }
+        }
+      }
+      let undimmed_points_flatten = [].concat.apply([], undimmed_points);
+
       _raycaster.setFromCamera( _mouse, _camera );
-      var intersects = _raycaster.intersectObjects( _points );
+      var intersects = _raycaster.intersectObjects( undimmed_points );
       if (intersects.length > 0) {
         if (intersects[0].object != _selectedObj) {
           _selectedObj = intersects[0].object;
@@ -495,7 +512,6 @@ ZP.ZP = function(el_, width_, height_) {
     // Sprites
 
     let dotSize = Math.cbrt(7.5 + 60000 / _aes.index.length);
-    console.log(dotSize);
     
     for (var i in _aes.index) {
       var x = _aes.x[i];
