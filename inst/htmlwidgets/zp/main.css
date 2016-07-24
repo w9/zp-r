@@ -60,7 +60,7 @@ body {
   cursor: pointer;
 }
 
-#legend .item.dimmed {
+#legend .item.dimmed .color-patch {
   opacity: 0.3;
 }
 

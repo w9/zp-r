@@ -493,6 +493,7 @@ ZP.ZP = function(el_, width_, height_) {
     _crosshairs.tween.to({ size: 14 }, 800).easing(TWEEN.Easing.Sinusoidal.InOut).repeat(Infinity).yoyo(true)
       .onUpdate(function(){ _crosshairs.scale.set(this.size, this.size, 1) })
       .start()
+    _scene.add( _crosshairs );
     _scene_overlay.add( _crosshairs );
 
     animate();

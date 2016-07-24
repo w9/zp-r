@@ -43,7 +43,7 @@ zp <-
     msg$data <- data_
     msg$mapping <- mapping_
 
-    sizing_policy <- sizingPolicy(viewer.padding=0)
+    sizing_policy <-sizingPolicy(padding=0, browser.fill=T)
 
     createWidget('zp', msg, sizingPolicy=sizing_policy)
   }
