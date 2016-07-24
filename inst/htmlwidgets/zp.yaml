@@ -1,0 +1,15 @@
+dependencies:
+  - name: zp
+    version: 0.0.1
+    src: htmlwidgets/zp
+    script: 
+      - lib/three.js
+      - lib/detector.js
+      - lib/keyboardstate.js
+      - lib/mousestate.js
+      - lib/orbit.js
+      - lib/stats.js
+      - lib/Tween.js
+      - ZP.js
+    stylesheet:
+      - main.css
