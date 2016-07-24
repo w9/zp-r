@@ -1,13 +1,11 @@
+// TODO: in "orthogonal views", zooming and panning should be allowed, whereas rotating quits it
+// TODO: implement continuous scale
 // TODO: double click should add a label following that dot, using the "label" aes
-// TODO: change the interation on the legend items from hovering to clicking
-// TODO: add "orthogonal views"
-// TODO: add "multiple coordinates" functionality (e.g., for PCA and MDS), and maybe multiple scales as well
+// TODO: add "multiple coordinates" functionality (e.g., for PCA and MDS), and maybe multiple **mappings** as well
+// TODO: add **instant type** search functionality, very useful when the dots are overwhelmingly many
 // TODO: use "BufferGeometry" and "PointMaterial" to render points. aspect ratio toggle can be changed accordingly
-// TODO: iframe is not going to work. try generate and serve the html dynamically, with a template html file and embed JSON
 // TODO: the "color patches" should be threejs canvas themselves
 // TODO: use pretty scales (1, 2, 5, 10 ticks) used in ggplot2, drawing gray lines is good enough 
-// TODO: add **instant type** search functionality, very useful when the dots are overwhelmingly many
-// TODO: implement continuous scale
 // TODO: should be able to specify a label layer
 // TODO: change the base to something like http://threejs.org/examples/#webgl_geometry_spline_editor, exept it's infinitely large and there's fog
 // TODO: add drop shadow to the base, looks great
@@ -23,9 +21,9 @@ ZP.ASPECT_STATE = { NONE: 0, TRANSITIONING: 1 };
 
 ZP.COLOR_PALETTE = ['#01a0e4','#db2d20','#01a252','#a16a94','#555555','#b5e4f4'];
 ZP.VIEW_ANGLE = 45;
+ZP.ORTHO_SHRINK = 180;
 ZP.NEAR = 0.1;
 ZP.FAR = 20000;
-ZP.DOT_SIZE = 5;
 
 ZP.POINT_ICON = document.createElement('img');
 ZP.POINT_ICON.src = 'data:image/png;base64,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';
@@ -242,13 +240,17 @@ ZP.ZP = function(el_, width_, height_) {
   var _selectedObj;
   var floor;
   var _crosshairs;
+  var _ortho = 'none';
 
-  var _camera;
-  _camera = new THREE.PerspectiveCamera( ZP.VIEW_ANGLE, width_ / height_, ZP.NEAR, ZP.FAR );
+  var _camera = new THREE.PerspectiveCamera( ZP.VIEW_ANGLE, width_ / height_, ZP.NEAR, ZP.FAR );
   _camera.position.set( -400, 0, -130 );
 
-  var _renderer;
-  _renderer = new THREE.WebGLRenderer( { antialias:true } );
+  var _ortho_camera = new THREE.OrthographicCamera(
+      width_ / height_ * -ZP.ORTHO_SHRINK, width_ / height_ * ZP.ORTHO_SHRINK,
+      ZP.ORTHO_SHRINK, -ZP.ORTHO_SHRINK, ZP.NEAR, ZP.FAR );
+
+
+  var _renderer = new THREE.WebGLRenderer( { antialias:true } );
   _renderer.setSize(width_, height_);
   _renderer.setClearColor(0xffffff, 1);
   _renderer.autoClear = false;
@@ -282,6 +284,13 @@ ZP.ZP = function(el_, width_, height_) {
   toggleAspectButton.title = 'toggle aspect ratio between 1:1:1 and original';
   toggleAspectButton.classList.add('material-icons');
   toolbarDom.appendChild(toggleAspectButton);
+
+  var toggleOrthoButton = document.createElement('i');
+  toggleOrthoButton.innerText = 'call_merge';
+  toggleOrthoButton.id = 'toggle-ortho-buttom';
+  toggleOrthoButton.title = 'toggle between orthographic and perspective camera';
+  toggleOrthoButton.classList.add('material-icons');
+  toolbarDom.appendChild(toggleOrthoButton);
 
   var datumDisplay = document.createElement('div');
   datumDisplay.id = 'datum-display';
@@ -367,6 +376,9 @@ ZP.ZP = function(el_, width_, height_) {
 
     
     resetCameraButton.addEventListener('click', function(e) {
+      console.log(JSON.stringify(_camera.position));
+      JSON.stringify
+      _ortho = 'none';
       _orbit.reset();
     });
 
@@ -381,6 +393,31 @@ ZP.ZP = function(el_, width_, height_) {
         _aspect_original = true;
       }
       syncGeometryWithAes();
+    });
+
+    toggleOrthoButton.addEventListener('click', function(e) {
+      if (_ortho == 'none') {
+        _ortho_camera.position.set( 0, 1000, 0 );
+        _ortho_camera.up.set( 1, 0, 0 );
+        _ortho_camera.lookAt(new THREE.Vector3(0, 0, 0));
+        _orbit.moveTo( new THREE.Vector3(-0.05, 420, 0) );
+        _ortho = 'z';
+      } else if (_ortho == 'z') {
+        _ortho_camera.position.set( -1000, 0, 0 );
+        _ortho_camera.up.set( 0, 1, 0 );
+        _ortho_camera.lookAt(new THREE.Vector3(0, 0, 0));
+        _orbit.moveTo( new THREE.Vector3(-420, 0, 0) );
+        _ortho = 'y';
+      } else if (_ortho == 'y') {
+        _ortho_camera.position.set( 0, 0, -1000 );
+        _ortho_camera.up.set( 0, 1, 0 );
+        _ortho_camera.lookAt(new THREE.Vector3(0, 0, 0));
+        _orbit.moveTo( new THREE.Vector3(0, 0, -420) );
+        _ortho = 'x';
+      } else if (_ortho == 'x') {
+        _ortho = 'none';
+        _orbit.reset();
+      }
     });
 
     el_.addEventListener('keypress', function(e) {
@@ -430,6 +467,10 @@ ZP.ZP = function(el_, width_, height_) {
     container.appendChild( _renderer.domElement );
 
     _orbit = new THREE.OrbitControls( _camera, _renderer.domElement, new THREE.Vector3(0,0,0));
+    _orbit.addEventListener('userAction', function(e) {
+      _ortho = 'none';
+    });
+
     _orbit.enableDamping = true;
     _orbit.dampingFactor = 0.4;
     _orbit.update();
@@ -452,6 +493,9 @@ ZP.ZP = function(el_, width_, height_) {
     _scene.add(floor);
 
     // Sprites
+
+    let dotSize = Math.cbrt(7.5 + 60000 / _aes.index.length);
+    console.log(dotSize);
     
     for (var i in _aes.index) {
       var x = _aes.x[i];
@@ -468,7 +512,7 @@ ZP.ZP = function(el_, width_, height_) {
 
       var discSprt = new THREE.Sprite( material );
       discSprt.position.set( x, y, z );
-      discSprt.scale.set( ZP.DOT_SIZE, ZP.DOT_SIZE, 1 );
+      discSprt.scale.set( dotSize, dotSize, 1 );
       discSprt.datum = datum;
       _scene.add( discSprt );
 
@@ -507,20 +551,29 @@ ZP.ZP = function(el_, width_, height_) {
       TWEEN.update();
       _orbit.update();
       _stats.update();
+      _renderer.domElement.focus();
     }
 
     function render() {
+      let render_camera = _ortho == 'none' ? _camera : _ortho_camera;
       _renderer.clear();
-      _renderer.render( _scene, _camera );
+      _renderer.render( _scene, render_camera );
       _renderer.clearDepth();
-      _renderer.render( _scene_overlay, _camera );
+      _renderer.render( _scene_overlay, render_camera );
     }
   };
 
   this.resize = function(width, height) {
     _renderer.setSize( width, height );
-    _camera.aspect  = width / height;
+
+    _camera.aspect = width / height;
     _camera.updateProjectionMatrix();
+
+    _ortho_camera.left = width / height * -ZP.ORTHO_SHRINK;
+    _ortho_camera.right = width / height * ZP.ORTHO_SHRINK;
+    _ortho_camera.top = ZP.ORTHO_SHRINK;
+    _ortho_camera.bottom = -ZP.ORTHO_SHRINK;
+    _ortho_camera.updateProjectionMatrix();
   };
 }
 

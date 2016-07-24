@@ -117,12 +117,24 @@ THREE.OrbitControls = function ( object, domElement, target ) {
 
 		//state = STATE.NONE;
     
-    this.moveTo(this.spherical0, this.target0);
+    this.moveToSpherical(this.spherical0, this.target0);
 
 	};
 
-  this.moveTo = function (spherical, target) {
+  this.moveToSpherical = function (spherical, target) {
+    target = target || this.target;
     state = STATE.MOVE_TO;
+    this.moveSpherical = spherical;
+    this.moveTarget = target;
+  };
+
+  this.moveTo = function (position, target) {
+    target = target || this.target;
+    state = STATE.MOVE_TO;
+
+    let spherical = new THREE.Spherical();
+    spherical.setFromVector3(position);
+
     this.moveSpherical = spherical;
     this.moveTarget = target;
   };
@@ -353,7 +365,8 @@ THREE.OrbitControls = function ( object, domElement, target ) {
 
 			var element = scope.domElement === document ? scope.domElement.body : scope.domElement;
 
-			if ( scope.object instanceof THREE.PerspectiveCamera ) {
+			if ( scope.object instanceof THREE.PerspectiveCamera ||
+           ( scope.object instanceof THREE.CombinedCamera && scope.object.inPerspectiveMode )) {
 
 				// perspective
 				var position = scope.object.position;
@@ -367,7 +380,8 @@ THREE.OrbitControls = function ( object, domElement, target ) {
 				panLeft( 2 * deltaX * targetDistance / element.clientHeight, scope.object.matrix );
 				panUp( 2 * deltaY * targetDistance / element.clientHeight, scope.object.matrix );
 
-			} else if ( scope.object instanceof THREE.OrthographicCamera ) {
+			} else if ( scope.object instanceof THREE.OrthographicCamera ||
+           ( scope.object instanceof THREE.CombinedCamera && scope.object.inOrthographicMode )) {
 
 				// orthographic
 				panLeft( deltaX * ( scope.object.right - scope.object.left ) / scope.object.zoom / element.clientWidth, scope.object.matrix );
@@ -387,11 +401,13 @@ THREE.OrbitControls = function ( object, domElement, target ) {
 
 	function dollyIn( dollyScale ) {
 
-		if ( scope.object instanceof THREE.PerspectiveCamera ) {
+		if ( scope.object instanceof THREE.PerspectiveCamera ||
+           ( scope.object instanceof THREE.CombinedCamera && scope.object.inPerspectiveMode )) {
 
 			scale /= dollyScale;
 
-		} else if ( scope.object instanceof THREE.OrthographicCamera ) {
+		} else if ( scope.object instanceof THREE.OrthographicCamera ||
+           ( scope.object instanceof THREE.CombinedCamera && scope.object.inOrthographicMode )) {
 
 			scope.object.zoom = Math.max( scope.minZoom, Math.min( scope.maxZoom, scope.object.zoom * dollyScale ) );
 			scope.object.updateProjectionMatrix();
@@ -408,11 +424,13 @@ THREE.OrbitControls = function ( object, domElement, target ) {
 
 	function dollyOut( dollyScale ) {
 
-		if ( scope.object instanceof THREE.PerspectiveCamera ) {
+		if ( scope.object instanceof THREE.PerspectiveCamera ||
+           ( scope.object instanceof THREE.CombinedCamera && scope.object.inPerspectiveMode )) {
 
 			scale *= dollyScale;
 
-		} else if ( scope.object instanceof THREE.OrthographicCamera ) {
+		} else if ( scope.object instanceof THREE.OrthographicCamera ||
+           ( scope.object instanceof THREE.CombinedCamera && scope.object.inOrthographicMode )) {
 
 			scope.object.zoom = Math.max( scope.minZoom, Math.min( scope.maxZoom, scope.object.zoom / dollyScale ) );
 			scope.object.updateProjectionMatrix();
@@ -914,6 +932,17 @@ THREE.OrbitControls = function ( object, domElement, target ) {
 	}
 
 	//
+	scope.domElement.addEventListener( 'contextmenu'         , function(){scope.dispatchEvent(new Event('userAction'))} , false );
+
+	scope.domElement.addEventListener( 'mousedown'           , function(){scope.dispatchEvent(new Event('userAction'))} , false );
+	scope.domElement.addEventListener( 'mousewheel'          , function(){scope.dispatchEvent(new Event('userAction'))} , false );
+	scope.domElement.addEventListener( 'MozMousePixelScroll' , function(){scope.dispatchEvent(new Event('userAction'))} , false ); // firefox
+
+	scope.domElement.addEventListener( 'touchstart'          , function(){scope.dispatchEvent(new Event('userAction'))} , false );
+	scope.domElement.addEventListener( 'touchend'            , function(){scope.dispatchEvent(new Event('userAction'))} , false );
+	scope.domElement.addEventListener( 'touchmove'           , function(){scope.dispatchEvent(new Event('userAction'))} , false );
+
+	window.addEventListener( 'keydown', onKeyDown, false );
 
 	scope.domElement.addEventListener( 'contextmenu', onContextMenu, false );
 

@@ -9,6 +9,7 @@ dependencies:
       - lib/mousestate.js
       - lib/orbit.js
       - lib/stats.js
+      - lib/CombinedCamera.js
       - lib/Tween.js
       - ZP.js
     stylesheet:
