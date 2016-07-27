@@ -27,23 +27,40 @@
 #   rstudioapi::viewer(paste0(file.path(temp_dir, folder_name, 'index.html')))
 # }
 
+#' @import pryr
+#' @export
+zpa <- function(...) {
+  output <- lapply(named_dots(...), as.character)
+  class(output) <- 'zpa'
+  output
+}
+
 #' ZP
 #'
 #' @import htmlwidgets
 #' @export
 #' @examples
 #' data(patients)
-#' zp(patients, list(x='pc1', y='pc2', z='pc3', color='patient'))
-#' zp(patients, list(x='mds1', y='mds2', z='mds3', color='patient'))
+#' zp(patients, zpa(x=pc1, y=pc2, z=pc3, color=patient))
+#' zp(patients, list(pca=zpa(x=pc1, y=pc2, z=pc3, color=patient), mds=zpa(x=mds1, y=mds2, z=mds3, color=patient)))
 zp <-
-  function(data_, mapping_) {
-    message('R function `zp` is called!')
-
+  function(data_, mappings_) {
     msg <- list()
     msg$data <- data_
-    msg$mapping <- mapping_
+    
+    if (class(mappings_) == 'zpa') {
+      msg$mappings <- list('unnamed_mapping'=mappings_)
+    } else if (class(mappings_) == 'list') {
+      if (is.na(names(mappings_))) {
+        stop('Error: no names found in mappings_.')
+      } else {
+        msg$mappings <- mappings_
+      }
+    } else {
+      stop(sprintf('Error: mappings_ has unrecognized class %s.', class(mappings_)))
+    }
 
-    sizing_policy <-sizingPolicy(padding=0, browser.fill=T)
+    sizing_policy <- sizingPolicy(padding=0, browser.fill=T)
 
     createWidget('zp', msg, sizingPolicy=sizing_policy)
   }

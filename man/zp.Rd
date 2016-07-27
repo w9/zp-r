@@ -4,14 +4,14 @@
 \alias{zp}
 \title{ZP}
 \usage{
-zp(data_, mapping_)
+zp(data_, mappings_)
 }
 \description{
 ZP
 }
 \examples{
 data(patients)
-zp(patients, list(x='pc1', y='pc2', z='pc3', color='patient'))
-zp(patients, list(x='mds1', y='mds2', z='mds3', color='patient'))
+zp(patients, zpa(x=pc1, y=pc2, z=pc3, color=patient))
+zp(patients, list(pca=zpa(x=pc1, y=pc2, z=pc3, color=patient), mds=zpa(x=mds1, y=mds2, z=mds3, color=patient)))
 }
 
