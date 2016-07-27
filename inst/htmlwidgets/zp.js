@@ -10,7 +10,7 @@ HTMLWidgets.widget({
 
     return {
       renderValue: function(msg) {
-        zp.plot(msg.data, msg.mapping);
+        zp.plot(msg.data, msg.mappings);
       },
 
       resize: function(width, height) {
