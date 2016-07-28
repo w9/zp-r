@@ -11,7 +11,13 @@ ZP
 }
 \examples{
 data(patients)
-zp(patients, zpa(x=pc1, y=pc2, z=pc3, color=patient))
-zp(patients, list(pca=zpa(x=pc1, y=pc2, z=pc3, color=patient), mds=zpa(x=mds1, y=mds2, z=mds3, color=patient)))
+data(MGH30genes)
+
+zp(patients, list(PCA=zpa(x=pc1, y=pc2, z=pc3, color=patient),
+                  MDS=zpa(x=mds1, y=mds2, z=mds3, color=patient),
+                  MDS_expr=zpa(x=mds1, y=mds2, z=mds3, color=highly_expressed),
+                  PCA_expr=zpa(x=pc1, y=pc2, z=pc3, color=highly_expressed)))
+
+zp(MGH30genes, list(Correlation_tSNE=zpa(x=tsne1, y=tsne2, z=tsne3, color=pathway)))
 }
 
