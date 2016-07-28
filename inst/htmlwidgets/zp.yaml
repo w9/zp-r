@@ -11,6 +11,7 @@ dependencies:
       - lib/stats.js
       - lib/CombinedCamera.js
       - lib/Tween.js
+      - lib/husl.js
       - ZP.js
     stylesheet:
       - main.css
