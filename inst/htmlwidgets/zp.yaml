@@ -12,6 +12,7 @@ dependencies:
       - lib/CombinedCamera.js
       - lib/Tween.js
       - lib/husl.js
+      - lib/ZP_ASSETS.js
       - ZP.js
     stylesheet:
       - main.css
