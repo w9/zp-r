@@ -4,7 +4,7 @@
 \alias{zp}
 \title{ZP}
 \usage{
-zp(data_, mappings_)
+zp(data_, mappings_, use_viewer_ = F)
 }
 \description{
 ZP

@@ -50,7 +50,7 @@ zpa <- function(...) {
 #'
 #' zp(MGH30genes, list(Correlation_tSNE=zpa(x=tsne1, y=tsne2, z=tsne3, color=pathway)))
 zp <-
-  function(data_, mappings_) {
+  function(data_, mappings_, use_viewer_=F) {
     msg <- list()
     msg$data <- data_
     
@@ -66,7 +66,7 @@ zp <-
       stop(sprintf('Error: mappings_ has unrecognized class %s.', class(mappings_)))
     }
 
-    sizing_policy <- sizingPolicy(padding=0, browser.fill=T)
+    sizing_policy <- sizingPolicy(padding=0, browser.fill=T, viewer.suppress=!use_viewer_)
 
     createWidget('zp', msg, sizingPolicy=sizing_policy)
   }
