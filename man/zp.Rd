@@ -10,6 +10,8 @@ zp(data_, use_viewer = T)
 ZP
 }
 \examples{
+library(magrittr)
+
 data(patients)
 data(MGH30genes)
 
