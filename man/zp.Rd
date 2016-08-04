@@ -4,7 +4,7 @@
 \alias{zp}
 \title{ZP}
 \usage{
-zp(data_, mappings_, use_viewer_ = T)
+zp(data_)
 }
 \description{
 ZP
@@ -13,11 +13,14 @@ ZP
 data(patients)
 data(MGH30genes)
 
-zp(patients, list(PCA=zpa(x=pc1, y=pc2, z=pc3, color=patient),
-                  MDS=zpa(x=mds1, y=mds2, z=mds3, color=patient),
-                  MDS_expr=zpa(x=mds1, y=mds2, z=mds3, color=highly_expressed),
-                  PCA_expr=zpa(x=pc1, y=pc2, z=pc3, color=highly_expressed)))
+zp(patients) \%>\%
+  zp_coord(pc1, pc2, pc3) \%>\%
+  zp_coord(mds1, mds2, mds3) \%>\%
+  zp_color(patient) \%>\%
+  zp_color(avg_log_exp)
 
-zp(MGH30genes, list(Correlation_tSNE=zpa(x=tsne1, y=tsne2, z=tsne3, color=pathway)))
+zp(MGH30genes) \%>\%
+  zp_coord(tsne1, tsne2, tsne3) \%>\%
+  zp_color(pathway)
 }
 

@@ -26,12 +26,15 @@ zpa <- function(...) {
 #' data(patients)
 #' data(MGH30genes)
 #'
-#' zp(patients, list(PCA=zpa(x=pc1, y=pc2, z=pc3, color=patient),
-#'                   MDS=zpa(x=mds1, y=mds2, z=mds3, color=patient),
-#'                   MDS_expr=zpa(x=mds1, y=mds2, z=mds3, color=highly_expressed),
-#'                   PCA_expr=zpa(x=pc1, y=pc2, z=pc3, color=highly_expressed)))
+#' zp(patients) %>%
+#'   zp_coord(pc1, pc2, pc3) %>%
+#'   zp_coord(mds1, mds2, mds3) %>%
+#'   zp_color(patient) %>%
+#'   zp_color(avg_log_exp)
 #'
-#' zp(MGH30genes, list(Correlation_tSNE=zpa(x=tsne1, y=tsne2, z=tsne3, color=pathway)))
+#' zp(MGH30genes) %>%
+#'   zp_coord(tsne1, tsne2, tsne3) %>%
+#'   zp_color(pathway)
 zp <-
   function(data_) {
     msg <- list()
@@ -60,14 +63,17 @@ zp <-
 #                  $ color $ color1 = 'col7'
 #                          $ color2 = 'col8'
 
-zp_color <- function(zp, name, color) {
- zp$color[[name]] <- list( color = as.character(substitute(color)) )
+#' @export
+zp_color <- function(zp, color) {
+ zp$color[[length(zp$color) + 1]] <- list( color = as.character(substitute(color)) )
 }
 
-zp_coord <- function(zp, name, x, y, z) {
-  zp$coord[[name]] <- list( x = as.character(substitute(x)),
-                            y = as.character(substitute(y)),
-                            z = as.character(substitute(z)) )
+#' @export
+zp_coord <- function(zp, x, y, z) {
+  zp$coord[[length(zp$coord) + 1]] <-
+    list( x = as.character(substitute(x)),
+          y = as.character(substitute(y)),
+          z = as.character(substitute(z)) )
 }
 
 print.zp <-
