@@ -56,10 +56,11 @@ zp <-
 
 #' @export
 zp_color <- function(zp, color=NULL) {
+  color <- substitute(color)
   if (is.null(color)) {
     zp$x$mappings$color[[length(zp$x$mappings$color) + 1]] <- NA
   } else {
-    zp$x$mappings$color[[length(zp$x$mappings$color) + 1]] <- as.character(substitute(color))
+    zp$x$mappings$color[[length(zp$x$mappings$color) + 1]] <- as.character(color)
   }
   zp
 }
