@@ -1,13 +1,3 @@
-# TODO: new API:
-#
-#                  zp(df) %>%
-#                    zp_coord(pc1, pc2, pc3) %>%
-#                    zp_coord(mds1, mds2, mds3) %>%
-#                    zp_color(group) %>%
-#                    zp_color(expr)
-# 
-
-
 #' Aesthetic object for ZP
 #'
 #' @import pryr
@@ -20,6 +10,7 @@ zpa <- function(...) {
 
 #' ZP
 #'
+#' @import htmlwidgets
 #' @export
 #' @examples
 #' data(patients)
@@ -36,15 +27,13 @@ zpa <- function(...) {
 #'   zp_color(pathway)
 zp <-
   function(data_) {
-    msg <- list()
-    msg$data <- data_
-    msg$coord <- list()
-    msg$color <- list()
+    x <- list()
+    x$data <- data_
+    x$coord <- list()
+    x$color <- list()
     
-    zp <- list()
-    zp$msg <- msg
-    class(zp) <- 'zp'
-    zp
+    sizing_policy <- sizingPolicy(padding=0, browser.fill=T, viewer.suppress=!use_viewer)
+    createWidget('zp', x, sizingPolicy=sizing_policy)
   }
 
 # zp$msg $ data $ col1 = [ ... ]
@@ -64,23 +53,15 @@ zp <-
 
 #' @export
 zp_color <- function(zp, color) {
-  zp$msg$color[[length(zp$msg$color) + 1]] <- list( color = as.character(substitute(color)) )
+  zp$x$color[[length(zp$x$color) + 1]] <- list( color = as.character(substitute(color)) )
   zp
 }
 
 #' @export
 zp_coord <- function(zp, x, y, z) {
-  zp$msg$coord[[length(zp$msg$coord) + 1]] <-
+  zp$x$coord[[length(zp$x$coord) + 1]] <-
     list( x = as.character(substitute(x)),
           y = as.character(substitute(y)),
           z = as.character(substitute(z)) )
   zp
 }
-
-#' @import htmlwidgets
-#' @export
-print.zp <-
-  function(zp, use_viewer=T) {
-    sizing_policy <- sizingPolicy(padding=0, browser.fill=T, viewer.suppress=!use_viewer)
-    createWidget('zp', zp$msg, sizingPolicy=sizing_policy)
-  }
