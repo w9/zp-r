@@ -24,7 +24,7 @@ zpa <- function(...) {
 #'   zp_color(patient) %>%
 #'   zp_color(avg_log_exp)
 #'
-#' zp(MGH30genes) %>%
+#' zp(MGH30_genes) %>%
 #'   zp_coord(tsne1, tsne2, tsne3) %>%
 #'   zp_color(pathway)
 zp <-
