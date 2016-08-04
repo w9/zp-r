@@ -55,8 +55,12 @@ zp <-
 #                          $ color2 = 'col8'
 
 #' @export
-zp_color <- function(zp, color) {
-  zp$x$mappings$color[[length(zp$x$mappings$color) + 1]] <- as.character(substitute(color))
+zp_color <- function(zp, color=NULL) {
+  if (is.null(color)) {
+    zp$x$mappings$color[[length(zp$x$mappings$color) + 1]] <- NA
+  } else {
+    zp$x$mappings$color[[length(zp$x$mappings$color) + 1]] <- as.character(substitute(color))
+  }
   zp
 }
 
