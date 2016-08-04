@@ -13,6 +13,8 @@ zpa <- function(...) {
 #' @import htmlwidgets
 #' @export
 #' @examples
+#' library(magrittr)
+#'
 #' data(patients)
 #' data(MGH30genes)
 #'
