@@ -64,13 +64,13 @@ zp <-
 
 #' @export
 zp_color <- function(zp, color) {
- zp$color[[length(zp$color) + 1]] <- list( color = as.character(substitute(color)) )
- zp
+  zp$msg$color[[length(zp$msg$color) + 1]] <- list( color = as.character(substitute(color)) )
+  zp
 }
 
 #' @export
 zp_coord <- function(zp, x, y, z) {
-  zp$coord[[length(zp$coord) + 1]] <-
+  zp$msg$coord[[length(zp$msg$coord) + 1]] <-
     list( x = as.character(substitute(x)),
           y = as.character(substitute(y)),
           z = as.character(substitute(z)) )
