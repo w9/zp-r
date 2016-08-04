@@ -33,23 +33,45 @@ zpa <- function(...) {
 #'
 #' zp(MGH30genes, list(Correlation_tSNE=zpa(x=tsne1, y=tsne2, z=tsne3, color=pathway)))
 zp <-
-  function(data_, mappings_, use_viewer_=T) {
+  function(data_) {
     msg <- list()
     msg$data <- data_
+    msg$coord <- list()
+    msg$color <- list()
     
-    if (class(mappings_) == 'zpa') {
-      msg$mappings <- list('unnamed_mapping'=mappings_)
-    } else if (class(mappings_) == 'list') {
-      if (is.na(names(mappings_))) {
-        stop('Error: no names found in mappings_.')
-      } else {
-        msg$mappings <- mappings_
-      }
-    } else {
-      stop(sprintf('Error: mappings_ has unrecognized class %s.', class(mappings_)))
-    }
+    zp <- list()
+    zp$msg <- msg
+    class(zp) <- 'zp'
+    zp
+  }
 
-    sizing_policy <- sizingPolicy(padding=0, browser.fill=T, viewer.suppress=!use_viewer_)
+# zp$msg $ data $ col1 = [ ... ]
+#               $ col2 = [ ... ]
+#               $ col3 = [ ... ]
+#               $ col4 = [ ... ]
+#               $ col5 = [ ... ]
+#               $ col6 = [ ... ]
+#               $ col7 = [ ... ]
+#               $ col8 = [ ... ]
+#
+#        $ mapping $ coord $ coord1 = ['col1', 'col2', 'col3']
+#                          $ coord2 = ['col4', 'col5', 'col6']
+#
+#                  $ color $ color1 = 'col7'
+#                          $ color2 = 'col8'
 
-    createWidget('zp', msg, sizingPolicy=sizing_policy)
+zp_color <- function(zp, name, color) {
+ zp$color[[name]] <- list( color = as.character(substitute(color)) )
+}
+
+zp_coord <- function(zp, name, x, y, z) {
+  zp$coord[[name]] <- list( x = as.character(substitute(x)),
+                            y = as.character(substitute(y)),
+                            z = as.character(substitute(z)) )
+}
+
+print.zp <-
+  function(zp, use_viewer=T) {
+    sizing_policy <- sizingPolicy(padding=0, browser.fill=T, viewer.suppress=!use_viewer)
+    createWidget('zp', zp$msg, sizingPolicy=sizing_policy)
   }

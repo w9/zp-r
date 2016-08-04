@@ -15,4 +15,4 @@ dependencies:
       - lib/ZP_ASSETS.js
       - ZP.js
     stylesheet:
-      - zp.css
+      - ZP.css
