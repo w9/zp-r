@@ -20,7 +20,6 @@ zpa <- function(...) {
 
 #' ZP
 #'
-#' @import htmlwidgets
 #' @export
 #' @examples
 #' data(patients)
@@ -66,6 +65,7 @@ zp <-
 #' @export
 zp_color <- function(zp, color) {
  zp$color[[length(zp$color) + 1]] <- list( color = as.character(substitute(color)) )
+ zp
 }
 
 #' @export
@@ -74,8 +74,11 @@ zp_coord <- function(zp, x, y, z) {
     list( x = as.character(substitute(x)),
           y = as.character(substitute(y)),
           z = as.character(substitute(z)) )
+  zp
 }
 
+#' @import htmlwidgets
+#' @export
 print.zp <-
   function(zp, use_viewer=T) {
     sizing_policy <- sizingPolicy(padding=0, browser.fill=T, viewer.suppress=!use_viewer)
