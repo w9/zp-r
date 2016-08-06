@@ -67,27 +67,39 @@ zp_data <- function(zp, data, append=T) {
   zp
 }
 
+affix <- function(x, a) {
+  x[[length(x)+1]] <- a
+  x
+}
+
 #' @import dplyr
 #' @import magrittr
 #' @export
 zp_color <- function(zp, color=NULL) {
   color <- substitute(color)
   if (is.null(color)) {
-    zp$x$mappings$color %<>% append(NA)
+    zp$x$mappings$color %<>% affix(NA)
   } else {
-    color_col <- as.character(quote(substitute(color)))
-    print(color_col)
+    color_col <- deparse(color)
     zp$x$data %<>% mutate_(color_col)
-    zp$x$mappings$color %<>% append(color_col)
+    zp$x$mappings$color %<>% affix(color_col)
   }
   zp
 }
 
+#' @import dplyr
+#' @import magrittr
 #' @export
 zp_coord <- function(zp, x, y, z) {
-  zp$x$mappings$coord[[length(zp$x$mappings$coord) + 1]] <-
-    list( x = as.character(substitute(x)),
-          y = as.character(substitute(y)),
-          z = as.character(substitute(z)) )
+  x_col <- deparse(substitute(x))
+  y_col <- deparse(substitute(y))
+  z_col <- deparse(substitute(z))
+  zp$x$data %<>% mutate_(x_col)
+  zp$x$data %<>% mutate_(y_col)
+  zp$x$data %<>% mutate_(z_col)
+  zp$x$mappings$coord %<>% affix(
+    list( x = x_col,
+          y = y_col,
+          z = z_col ))
   zp
 }
