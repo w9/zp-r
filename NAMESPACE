@@ -3,6 +3,7 @@
 export(zp)
 export(zp_color)
 export(zp_coord)
+export(zp_data)
 export(zpa)
 import(htmlwidgets)
 import(pryr)
