@@ -56,19 +56,29 @@ zp <-
 #                  $ color $ color1 = 'col7'
 #                          $ color2 = 'col8'
 
+#' @import dplyr
 #' @export
-zp_data <- function(zp, data) {
-  zp$x$data <- data
+zp_data <- function(zp, data, append=T) {
+  if (append) {
+    zp$x$data <- bind_cols(zp$x$data, data)
+  } else {
+    zp$x$data <- data
+  }
   zp
 }
 
+#' @import dplyr
+#' @import magrittr
 #' @export
 zp_color <- function(zp, color=NULL) {
   color <- substitute(color)
   if (is.null(color)) {
-    zp$x$mappings$color[[length(zp$x$mappings$color) + 1]] <- NA
+    zp$x$mappings$color %<>% append(NA)
   } else {
-    zp$x$mappings$color[[length(zp$x$mappings$color) + 1]] <- as.character(color)
+    color_col <- as.character(quote(substitute(color)))
+    print(color_col)
+    zp$x$data %<>% mutate_(color_col)
+    zp$x$mappings$color %<>% append(color_col)
   }
   zp
 }
