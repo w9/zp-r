@@ -28,14 +28,14 @@ zpa <- function(...) {
 #'   zp_coord(tsne1, tsne2, tsne3) %>%
 #'   zp_color(pathway)
 zp <-
-  function(data_=NULL, use_viewer=F) {
+  function(data=NULL, debug=F, use_viewer=F) {
     x <- list()
-    x$data <- data_
+    x$data <- data
     x$mappings <- list()
     x$mappings$coord <- list()
     x$mappings$color <- list()
     x$options <- list()
-    x$options$debug <- F
+    x$options$debug <- debug
     
     sizing_policy <- sizingPolicy(padding=0, browser.fill=T, viewer.suppress=!use_viewer)
     createWidget('zp', x, sizingPolicy=sizing_policy)
