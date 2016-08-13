@@ -28,7 +28,7 @@ zpa <- function(...) {
 #'   zp_coord(tsne1, tsne2, tsne3) %>%
 #'   zp_color(pathway)
 zp <-
-  function(data=NULL, title=NULL, color=list(), coord=list(), debug=F, use_viewer=F) {
+  function(data=NULL, title='Unititled', color=list(), coord=list(), debug=F, use_viewer=F) {
     x <- list()
     x$data <- data
     x$mappings <- list()
