@@ -28,14 +28,15 @@ zpa <- function(...) {
 #'   zp_coord(tsne1, tsne2, tsne3) %>%
 #'   zp_color(pathway)
 zp <-
-  function(data=NULL, debug=F, use_viewer=F) {
+  function(data=NULL, title=NULL, color=list(), coord=list(), debug=F, use_viewer=F) {
     x <- list()
     x$data <- data
     x$mappings <- list()
-    x$mappings$coord <- list()
-    x$mappings$color <- list()
+    x$mappings$coord <- coord
+    x$mappings$color <- color
     x$options <- list()
     x$options$debug <- debug
+    x$options$title <- title
     
     sizing_policy <- sizingPolicy(padding=0, browser.fill=T, viewer.suppress=!use_viewer)
     createWidget('zp', x, sizingPolicy=sizing_policy)
@@ -60,6 +61,12 @@ zp <-
 #' @export
 zp_bind <- function(zp, data) {
   zp$x$data <- zp$x$data %>% bind_cols(data)
+  zp
+}
+
+#' @export
+zp_title <- function(zp, title) {
+  zp$x$options$title <- title
   zp
 }
 
