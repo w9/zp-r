@@ -28,7 +28,9 @@ zpa <- function(...) {
 #'   zp_coord(tsne1, tsne2, tsne3) %>%
 #'   zp_color(pathway)
 zp <-
-  function(data=NULL, title='Unititled', color=list(), coord=list(), debug=F, use_viewer=F) {
+  function(data=NULL, color=list(), coord=list(), title=NULL, debug=F, use_viewer=F) {
+    if (is.null(title) && !is.null(data)) title <- deparse(substitute(data))
+
     x <- list()
     x$data <- data
     x$mappings <- list()
@@ -63,6 +65,7 @@ zp_bind <- function(zp, data) {
   zp$x$data <- zp$x$data %>% bind_cols(data)
   zp
 }
+
 
 #' @export
 zp_title <- function(zp, title) {
