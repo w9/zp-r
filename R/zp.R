@@ -58,12 +58,22 @@ zp <-
 
 #' @import dplyr
 #' @export
-zp_data <- function(zp, data, append=T) {
-  if (append) {
-    zp$x$data <- bind_cols(zp$x$data, data)
-  } else {
-    zp$x$data <- data
-  }
+zp_bind <- function(zp, data) {
+  zp$x$data <- zp$x$data %>% bind_cols(data)
+  zp
+}
+
+#' @import dplyr
+#' @export
+zp_join <- function(zp, data) {
+  zp$x$data <- zp$x$data %>% left_join(data)
+  zp
+}
+
+#' @import dplyr
+#' @export
+zp_data <- function(zp, data) {
+  zp$x$data <- data
   zp
 }
 
