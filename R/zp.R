@@ -64,6 +64,14 @@ zp_bind <- function(zp, data) {
 }
 
 #' @import dplyr
+#' @import purrr
+#' @export
+zp_apply <- function(zp, f) {
+  zp$x$data <- as_function(f)(zp$x$data)
+  zp
+}
+
+#' @import dplyr
 #' @export
 zp_join <- function(zp, data) {
   zp$x$data <- zp$x$data %>% left_join(data)
@@ -77,11 +85,7 @@ zp_data <- function(zp, data) {
   zp
 }
 
-affix <- function(x, a) {
-  x[[length(x)+1]] <- a
-  x
-}
-
+#' @import zx
 #' @import dplyr
 #' @import magrittr
 #' @export
@@ -97,6 +101,7 @@ zp_color <- function(zp, color=NULL) {
   zp
 }
 
+#' @import zx
 #' @import dplyr
 #' @import magrittr
 #' @export
