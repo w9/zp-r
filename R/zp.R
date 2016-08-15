@@ -132,6 +132,7 @@ zp_coord <- function(zp, x, y, z) {
 #' @import zx
 #' @import dplyr
 #' @import pryr
+#' @export
 zp_options <- function(zp, ...) {
   new_options <- named_dots(...)
   zp$x$options <- zp$x$options %>% overwrite_list(new_options)
