@@ -128,3 +128,12 @@ zp_coord <- function(zp, x, y, z) {
           z = z_col ))
   zp
 }
+
+#' @import zx
+#' @import dplyr
+#' @import pryr
+zp_options <- function(zp, ...) {
+  new_options <- named_dots(...)
+  zp$x$options <- zp$x$options %>% overwrite_list(new_options)
+  zp
+}
