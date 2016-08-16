@@ -42,11 +42,7 @@ zp <-
     x$mappings <- list()
     x$mappings$coord <- coord
     x$mappings$color <- color
-    x$options <- list(
-      debug          = F,
-      animation      = T,
-      dimmed_opacity = 0.1
-      ) %>% overwrite_list(list(...))
+    x$options <- list(...)
     
     sizing_policy <- sizingPolicy(padding=0, browser.fill=T, viewer.suppress=!use_viewer)
     createWidget('zp', x, sizingPolicy=sizing_policy)
