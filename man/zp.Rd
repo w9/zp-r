@@ -4,7 +4,8 @@
 \alias{zp}
 \title{ZP}
 \usage{
-zp(data = NULL, color = list(), coord = list(), title = NULL, ...)
+zp(data = NULL, color = list(), coord = list(), title = NULL,
+  use_viewer = F, ...)
 }
 \description{
 ZP

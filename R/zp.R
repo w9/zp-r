@@ -32,6 +32,7 @@ zp <-
            color          = list(),
            coord          = list(),
            title          = NULL,
+           use_viewer     = F,
            ...
            ) {
     if (is.null(title) && !is.null(data)) title <- deparse(substitute(data))
@@ -43,7 +44,6 @@ zp <-
     x$mappings$color <- color
     x$options <- list(
       debug          = F,
-      use_viewer     = F,
       animation      = T,
       dimmed_opacity = 0.1
       ) %>% overwrite_list(list(...))
