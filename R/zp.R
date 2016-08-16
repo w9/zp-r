@@ -115,6 +115,22 @@ zp_color <- function(zp, color=NULL) {
 #' @import dplyr
 #' @import magrittr
 #' @export
+zp_colors_ <- function(zp, colors=NULL) {
+  for (color in colors) {
+    if (is.null(color)) {
+      zp$x$mappings$color %<>% affix(NA)
+    } else {
+      zp$x$data %<>% mutate_(color)
+      zp$x$mappings$color %<>% affix(color)
+    }
+  }
+  zp
+}
+
+#' @import zx
+#' @import dplyr
+#' @import magrittr
+#' @export
 zp_coord <- function(zp, x, y, z) {
   x_col <- deparse(substitute(x))
   y_col <- deparse(substitute(y))
