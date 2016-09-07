@@ -96,7 +96,7 @@ zp_join <- function(zp, data) {
 #' @export
 zp_join_color <- function(zp, data) {
   zp_join(zp, data) %>%
-    zp_colors_(setdiff(colnames(zp$x$data), colnames(data)))
+    zp_colors_(colnames(data)[!colnames(data) %in% colnames(zp$x$data)])
 }
 
 #' @import dplyr
