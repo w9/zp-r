@@ -94,6 +94,13 @@ zp_join <- function(zp, data) {
 
 #' @import dplyr
 #' @export
+zp_join_color <- function(zp, data) {
+  zp_join(zp, data) %>%
+    zp_colors_(setdiff(colnames(zp$x$data), colnames(data)))
+}
+
+#' @import dplyr
+#' @export
 zp_data <- function(zp, data) {
   zp$x$data <- data
   zp
