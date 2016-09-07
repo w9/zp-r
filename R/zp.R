@@ -94,6 +94,13 @@ zp_join <- function(zp, data) {
 
 #' @import dplyr
 #' @export
+zp_join_coord <- function(zp, data) {
+  zp_join(zp, data) %>%
+    zp_coords_(list(colnames(data)[!colnames(data) %in% colnames(zp$x$data)][1:3]))
+}
+
+#' @import dplyr
+#' @export
 zp_join_color <- function(zp, data) {
   zp_join(zp, data) %>%
     zp_colors_(colnames(data)[!colnames(data) %in% colnames(zp$x$data)])
