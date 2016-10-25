@@ -1,3 +1,22 @@
+overwrite_list <- function(old, new, recursive=F) {
+  for (n in names(old)) {
+    if (recursive && is.list(old[[n]]) && is.list(new[[n]])) {
+      new[[n]] <- overwrite_list(old[[n]], new[[n]], recursive=T)
+    } else {
+      if (is.null(new[[n]])) {
+        new[[n]] <- old[[n]]
+      }
+    }
+  }
+
+  new
+}
+
+affix <- function(x, a) {
+  x[[length(x)+1]] <- a
+  x
+}
+
 #' Aesthetic object for ZP
 #'
 #' @import pryr
@@ -113,7 +132,6 @@ zp_data <- function(zp, data) {
   zp
 }
 
-#' @import zx
 #' @import dplyr
 #' @import magrittr
 #' @export
@@ -129,7 +147,6 @@ zp_color <- function(zp, color=NULL) {
   zp
 }
 
-#' @import zx
 #' @import dplyr
 #' @import magrittr
 #' @export
@@ -145,7 +162,6 @@ zp_colors_ <- function(zp, colors=NULL) {
   zp
 }
 
-#' @import zx
 #' @import dplyr
 #' @import magrittr
 #' @export
@@ -156,7 +172,6 @@ zp_coords_ <- function(zp, coord_list) {
   zp
 }
 
-#' @import zx
 #' @import dplyr
 #' @import magrittr
 #' @export
@@ -171,7 +186,6 @@ zp_coord <- function(zp, x, y, z) {
   zp
 }
 
-#' @import zx
 #' @import dplyr
 #' @import pryr
 #' @export
